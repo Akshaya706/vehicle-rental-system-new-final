@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DriveEase — Vehicle Rental Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #060b14;
+      --card-bg: rgba(13, 20, 35, 0.75);
+      --border: rgba(255,255,255,0.07);
+      --border-h: rgba(255,255,255,0.16);
+      --text: #f1f5f9;
+      --muted: #64748b;
+      --dim: #334155;
+      --cyan: #06b6d4;
+      --blue: #3b82f6;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --green: #10b981;
+      --r-sm: 10px;
+      --r-md: 16px;
+      --r-lg: 24px;
+      --r-pill: 9999px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Animated Background ── */
+    .bg-mesh {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .bg-mesh::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 10% -10%, rgba(59,130,246,0.14) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 90% 10%,  rgba(139,92,246,0.12) 0%, transparent 55%),
+        radial-gradient(ellipse 70% 60% at 50% 100%, rgba(6,182,212,0.10) 0%, transparent 55%);
+    }
+    /* Moving orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.35;
+      animation: drift 20s ease-in-out infinite alternate;
+    }
+    .orb-1 { width: 500px; height: 500px; background: rgba(59,130,246,0.35); top: -120px; left: -100px; animation-duration: 22s; }
+    .orb-2 { width: 400px; height: 400px; background: rgba(139,92,246,0.3); top: 40%; right: -120px; animation-duration: 18s; animation-delay: -5s; }
+    .orb-3 { width: 350px; height: 350px; background: rgba(6,182,212,0.25); bottom: -80px; left: 30%; animation-duration: 25s; animation-delay: -10s; }
+
+    @keyframes drift {
+      0%   { transform: translate(0, 0) scale(1); }
+      33%  { transform: translate(40px, 30px) scale(1.05); }
+      66%  { transform: translate(-20px, 50px) scale(0.97); }
+      100% { transform: translate(30px, -20px) scale(1.03); }
+    }
+
+    /* Grid dots overlay */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+    }
+
+    /* ── Layout ── */
+    .page { position: relative; z-index: 1; }
+
+    /* ── Navbar ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      background: rgba(6,11,20,0.6);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .nav-logo {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem; color: white;
+      box-shadow: 0 4px 16px rgba(59,130,246,0.4);
+    }
+    .nav-brand-name {
+      font-size: 1.2rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      background: linear-gradient(120deg, #fff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .nav-brand-sub {
+      font-size: 0.68rem;
+      color: var(--cyan);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .nav-pill {
+      display: flex; align-items: center; gap: 0.4rem;
+      background: rgba(6,182,212,0.1);
+      border: 1px solid rgba(6,182,212,0.25);
+      color: var(--cyan);
+      padding: 0.35rem 0.9rem;
+      border-radius: var(--r-pill);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 7rem 1.5rem 4rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.55rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--muted);
+      padding: 0.4rem 1.1rem;
+      border-radius: var(--r-pill);
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      letter-spacing: 0.02em;
+    }
+    .hero-eyebrow span { color: var(--cyan); font-weight: 700; }
+    .hero-h1 {
+      font-size: clamp(2.8rem, 6vw, 4.2rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+    }
+    .hero-h1 .grad-blue {
+      background: linear-gradient(120deg, #60a5fa, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-h1 .grad-white {
+      background: linear-gradient(120deg, #fff 50%, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--muted);
+      line-height: 1.65;
+      max-width: 640px;
+      margin: 0 auto 3.5rem;
+    }
+
+    /* Live stats strip */
+    .stats-strip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .stat-item {
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .stat-num {
+      font-size: 1.75rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .stat-num.blue  { color: #60a5fa; }
+    .stat-num.cyan  { color: #22d3ee; }
+    .stat-num.green { color: #34d399; }
+    .stat-num.amber { color: #fbbf24; }
+    .stat-lbl {
+      font-size: 0.76rem;
+      color: var(--muted);
+      margin-top: 0.3rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .stat-divider {
+      width: 1px;
+      height: 36px;
+      background: var(--border);
+    }
+
+    /* ── Portal Cards ── */
+    .portals-wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 1.5rem 6rem;
+    }
+    .portals-label {
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--dim);
+      margin-bottom: 1.75rem;
+    }
+    .portals-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    @media (max-width: 860px) {
+      .portals-grid { grid-template-columns: 1fr; }
+    }
+
+    .portal-card {
+      position: relative;
+      border-radius: var(--r-lg);
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 2.5rem 2rem 2rem;
+    }
+
+    /* Glow line at top */
+    .portal-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    /* Glow spot behind icon */
+    .portal-card::after {
+      content: '';
+      position: absolute;
+      top: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+    .portal-card:hover::after { opacity: 0.6; }
+
+    .portal-card.c-customer::before { background: linear-gradient(90deg, #0ea5e9, #06b6d4); }
+    .portal-card.c-manager::before  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .portal-card.c-admin::before    { background: linear-gradient(90deg, #ef4444, #f97316); }
+
+    .portal-card.c-customer::after { background: #06b6d4; }
+    .portal-card.c-manager::after  { background: #f59e0b; }
+    .portal-card.c-admin::after    { background: #ef4444; }
+
+    .portal-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--border-h);
+      box-shadow: 0 28px 60px rgba(0,0,0,0.5);
+    }
+    .portal-card.c-customer:hover { box-shadow: 0 28px 60px rgba(6,182,212,0.15), 0 0 0 1px rgba(6,182,212,0.2); }
+    .portal-card.c-manager:hover  { box-shadow: 0 28px 60px rgba(245,158,11,0.15), 0 0 0 1px rgba(245,158,11,0.2); }
+    .portal-card.c-admin:hover    { box-shadow: 0 28px 60px rgba(239,68,68,0.15),  0 0 0 1px rgba(239,68,68,0.2); }
+
+    .p-icon-ring {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
+    .c-customer .p-icon-ring { background: rgba(6,182,212,0.12); color: #22d3ee; box-shadow: 0 0 0 8px rgba(6,182,212,0.06); }
+    .c-manager  .p-icon-ring { background: rgba(245,158,11,0.12); color: #fbbf24; box-shadow: 0 0 0 8px rgba(245,158,11,0.06); }
+    .c-admin    .p-icon-ring { background: rgba(239,68,68,0.12);  color: #f87171; box-shadow: 0 0 0 8px rgba(239,68,68,0.06); }
+
+    .p-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.2rem;
+    }
+    .p-role-tag {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 0.22rem 0.7rem;
+      border-radius: var(--r-pill);
+      margin-bottom: 1.75rem;
+    }
+    .c-customer .p-role-tag { background: rgba(6,182,212,0.15);  color: #38bdf8; border: 1px solid rgba(6,182,212,0.25); }
+    .c-manager  .p-role-tag { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
+    .c-admin    .p-role-tag { background: rgba(239,68,68,0.15);  color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+
+    .p-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .p-creds {
+      width: 100%;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: var(--r-sm);
+      padding: 0.7rem 1rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .p-creds-label {
+      font-size: 0.73rem;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .p-creds-val {
+      font-size: 0.82rem;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+      color: #38bdf8;
+    }
+
+    .p-btn {
+      display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+      width: 100%;
+      padding: 0.85rem 1.25rem;
+      border-radius: var(--r-md);
+      border: none;
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      letter-spacing: 0.01em;
+    }
+    .p-btn-customer { background: linear-gradient(135deg, #0284c7, #06b6d4); color: white; box-shadow: 0 6px 20px rgba(2,132,199,0.35); }
+    .p-btn-customer:hover { background: linear-gradient(135deg, #0369a1, #0891b2); transform: translateY(-1px); box-shadow: 0 10px 28px rgba(2,132,199,0.45); }
+    .p-btn-manager  { background: linear-gradient(135deg, #d97706, #f59e0b); color: #1c1007; box-shadow: 0 6px 20px rgba(217,119,6,0.35); }
+    .p-btn-manager:hover  { background: linear-gradient(135deg, #b45309, #d97706); transform: translateY(-1px); box-shadow: 0 10px 28px rgba(217,119,6,0.45); }
+    .p-btn-admin    { background: linear-gradient(135deg, #dc2626, #ef4444); color: white; box-shadow: 0 6px 20px rgba(220,38,38,0.35); }
+    .p-btn-admin:hover    { background: linear-gradient(135deg, #b91c1c, #dc2626); transform: translateY(-1px); box-shadow: 0 10px 28px rgba(220,38,38,0.45); }
+
+    /* ── Fleet Showcase ── */
+    .fleet-section {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 1.5rem 5rem;
+    }
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.75rem;
+    }
+    .section-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex; align-items: center; gap: 0.7rem;
+    }
+    .section-title i { color: var(--cyan); }
+    .live-dot {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.76rem; font-weight: 700;
+      color: var(--green);
+    }
+    .live-dot::before {
+      content: '';
+      width: 7px; height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(1.4); }
+    }
+
+    /* Vehicle Cards */
+    .vehicles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+    .veh-card {
+      background: rgba(13,20,35,0.7);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      overflow: hidden;
+      transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+    }
+    .veh-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(6,182,212,0.3);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(6,182,212,0.15);
+    }
+    .veh-img {
+      position: relative;
+      height: 165px;
+      overflow: hidden;
+      background: #0d1423;
+    }
+    .veh-img img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.45s ease;
+    }
+    .veh-card:hover .veh-img img { transform: scale(1.06); }
+
+    .veh-avail-tag {
+      position: absolute;
+      top: 10px; right: 10px;
+      font-size: 0.68rem; font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.22rem 0.65rem;
+      border-radius: var(--r-pill);
+      backdrop-filter: blur(8px);
+    }
+    .tag-available   { background: rgba(16,185,129,0.85); color: #fff; }
+    .tag-booked      { background: rgba(245,158,11,0.85); color: #1c1007; }
+    .tag-rented      { background: rgba(139,92,246,0.85); color: #fff; }
+    .tag-maintenance { background: rgba(239,68,68,0.85);  color: #fff; }
+
+    .veh-type-chip {
+      position: absolute;
+      top: 10px; left: 10px;
+      font-size: 0.68rem; font-weight: 700;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(8px);
+      color: #94a3b8;
+      padding: 0.2rem 0.55rem;
+      border-radius: var(--r-pill);
+    }
+
+    .veh-body { padding: 1.1rem 1.1rem 1rem; }
+    .veh-name {
+      font-size: 1rem; font-weight: 800;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.3rem;
+    }
+    .veh-reg {
+      font-size: 0.75rem; color: var(--muted);
+      display: flex; align-items: center; gap: 0.3rem;
+      margin-bottom: 0.85rem;
+    }
+    .veh-specs {
+      display: flex; gap: 1rem;
+      font-size: 0.75rem; color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    .veh-specs span { display: flex; align-items: center; gap: 0.3rem; }
+    .veh-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid var(--border);
+      padding-top: 0.85rem;
+    }
+    .veh-price .num {
+      font-size: 1.3rem; font-weight: 900;
+      color: #38bdf8;
+      letter-spacing: -0.02em;
+    }
+    .veh-price .unit {
+      font-size: 0.72rem; color: var(--muted);
+    }
+    .veh-book-btn {
+      font-family: inherit;
+      font-size: 0.78rem; font-weight: 700;
+      padding: 0.45rem 0.9rem;
+      background: rgba(6,182,212,0.12);
+      color: #38bdf8;
+      border: 1px solid rgba(6,182,212,0.25);
+      border-radius: var(--r-sm);
+      cursor: pointer; text-decoration: none;
+      transition: all 0.2s ease;
+      display: flex; align-items: center; gap: 0.35rem;
+    }
+    .veh-book-btn:hover { background: rgba(6,182,212,0.22); border-color: rgba(6,182,212,0.4); transform: translateY(-1px); }
+    .veh-book-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .footer-brand {
+      display: flex; align-items: center; gap: 0.65rem;
+      text-decoration: none; color: var(--text);
+    }
+    .footer-logo {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; color: white;
+    }
+    .footer-name { font-weight: 800; font-size: 0.95rem; letter-spacing: -0.02em; }
+    .footer-info { font-size: 0.78rem; color: var(--muted); }
+    .footer-info strong { color: #94a3b8; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 7px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<div class="bg-mesh">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+<div class="bg-grid"></div>
+
+<div class="page">
+
+  <!-- ─── Navbar ─── -->
+  <nav>
+    <a href="index.html" class="nav-brand">
+      <div class="nav-logo"><i class="fa-solid fa-car-rear"></i></div>
+      <div>
+        <div class="nav-brand-name">DriveEase</div>
+        <div class="nav-brand-sub">Vehicle Rental Management System</div>
+      </div>
+    </a>
+    <div class="nav-pill">
+      <i class="fa-solid fa-code-branch"></i> IEEE 830 SRS &bull; Java Spring Boot
+    </div>
+  </nav>
+
+  <!-- ─── Hero ─── -->
+  <section class="hero">
+    <div class="hero-eyebrow">
+      <i class="fa-solid fa-shield-halved"></i>
+      Role-Based Access &mdash; <span>3 Dedicated Portals</span>
+    </div>
+
+    <h1 class="hero-h1">
+      <span class="grad-blue">Smart Vehicle Rentals,</span><br>
+      <span class="grad-white">Built for Everyone.</span>
+    </h1>
+
+    <p class="hero-sub">
+      One unified platform with separate, purpose-built dashboards for Customers, Rental Managers, and System Administrators — powered by Java Spring Boot.
+    </p>
+
+    <!-- Live API stats strip -->
+    <div class="stats-strip" id="statsStrip">
+      <div class="stat-item">
+        <div class="stat-num blue" id="sFleet">—</div>
+        <div class="stat-lbl">Fleet Vehicles</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="stat-num cyan" id="sAvail">—</div>
+        <div class="stat-lbl">Available Now</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="stat-num green" id="sRevenue">—</div>
+        <div class="stat-lbl">Total Revenue</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="stat-num amber" id="sCustomers">—</div>
+        <div class="stat-lbl">Customers</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── 3 Portal Cards ─── -->
+  <section class="portals-wrap">
+    <div class="portals-label">Select your access portal to get started</div>
+
+    <div class="portals-grid">
+
+      <!-- Customer -->
+      <div class="portal-card c-customer">
+        <div class="p-icon-ring"><i class="fa-solid fa-user-circle"></i></div>
+        <div class="p-title">Customer</div>
+        <div class="p-role-tag"><i class="fa-solid fa-circle" style="font-size:0.5rem;"></i> Customer Portal</div>
+        <div class="p-divider"></div>
+        <div class="p-creds">
+          <div class="p-creds-label">Demo Login</div>
+          <div class="p-creds-val">john_doe / user123</div>
+        </div>
+        <a href="customer-login.html" class="p-btn p-btn-customer">
+          <i class="fa-solid fa-right-to-bracket"></i> Customer Login
+        </a>
+      </div>
+
+      <!-- Manager -->
+      <div class="portal-card c-manager">
+        <div class="p-icon-ring"><i class="fa-solid fa-clipboard-check"></i></div>
+        <div class="p-title">Rental Manager</div>
+        <div class="p-role-tag"><i class="fa-solid fa-circle" style="font-size:0.5rem;"></i> Operations Portal</div>
+        <div class="p-divider"></div>
+        <div class="p-creds">
+          <div class="p-creds-label">Demo Login</div>
+          <div class="p-creds-val">manager_sarah / mgr123</div>
+        </div>
+        <a href="manager-login.html" class="p-btn p-btn-manager">
+          <i class="fa-solid fa-user-shield"></i> Manager Login
+        </a>
+      </div>
+
+      <!-- Admin -->
+      <div class="portal-card c-admin">
+        <div class="p-icon-ring"><i class="fa-solid fa-user-gear"></i></div>
+        <div class="p-title">Administrator</div>
+        <div class="p-role-tag"><i class="fa-solid fa-circle" style="font-size:0.5rem;"></i> System Admin Portal</div>
+        <div class="p-divider"></div>
+        <div class="p-creds">
+          <div class="p-creds-label">Demo Login</div>
+          <div class="p-creds-val">admin / admin123</div>
+        </div>
+        <a href="admin-login.html" class="p-btn p-btn-admin">
+          <i class="fa-solid fa-shield-halved"></i> Admin Login
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── Live Fleet Showcase ─── -->
+  <section class="fleet-section">
+    <div class="section-header">
+      <div class="section-title">
+        <i class="fa-solid fa-car-side"></i> Live Fleet Showcase
+      </div>
+      <div class="live-dot">Real-time Status</div>
+    </div>
+
+    <div class="vehicles-grid" id="fleetGrid">
+      <div style="grid-column:1/-1; text-align:center; padding:3rem; color:var(--muted);">
+        <i class="fa-solid fa-spinner fa-spin fa-2x"></i><br><br>Loading fleet...
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Footer ─── -->
+  <footer>
+    <a href="index.html" class="footer-brand">
+      <div class="footer-logo"><i class="fa-solid fa-car-rear"></i></div>
+      <div>
+        <div class="footer-name">DriveEase</div>
+        <div style="font-size:0.7rem; color:var(--muted); margin-top:0.1rem;">Vehicle Rental Management System v1.0</div>
+      </div>
+    </a>
+    <div class="footer-info">
+      Prepared by <strong>AKSHAYA.R</strong> &bull; B.Tech Information Technology &bull; 01.07.2026
+    </div>
+  </footer>
+
+</div><!-- /page -->
+
+<script>
+  // ── Load Stats ──
+  async function loadStats() {
+    try {
+      const res = await fetch('/api/analytics/summary');
+      const data = await res.json();
+      document.getElementById('sFleet').textContent     = data.totalVehicles;
+      document.getElementById('sAvail').textContent     = data.availableVehicles;
+      document.getElementById('sRevenue').textContent   = '$' + Number(data.totalRevenue).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+      document.getElementById('sCustomers').textContent = data.totalCustomers;
+    } catch(e) { console.warn('Stats load error', e); }
+  }
+
+  // ── Load Fleet ──
+  async function loadFleet() {
+    const grid = document.getElementById('fleetGrid');
+    try {
+      const res = await fetch('/api/vehicles');
+      const vehicles = await res.json();
+
+      if (!vehicles || vehicles.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:2rem;">No vehicles found.</div>';
+        return;
+      }
+
+      grid.innerHTML = vehicles.slice(0, 6).map(v => {
+        const avail = v.availability || 'AVAILABLE';
+        let tagClass = 'tag-available', tagLabel = avail;
+        if (avail === 'BOOKED')           { tagClass = 'tag-booked';      tagLabel = 'Booked'; }
+        if (avail === 'RENTED')           { tagClass = 'tag-rented';      tagLabel = 'On Road'; }
+        if (avail === 'UNDER_MAINTENANCE'){ tagClass = 'tag-maintenance'; tagLabel = 'In Service'; }
+        if (avail === 'AVAILABLE')        { tagLabel = 'Available'; }
+
+        const btnDisabled = avail !== 'AVAILABLE' ? 'disabled' : '';
+        const btnText = avail === 'AVAILABLE' ? '<i class="fa-solid fa-calendar-check"></i> Book Now' : `<i class="fa-solid fa-lock"></i> ${tagLabel}`;
+
+        return `
+          <div class="veh-card">
+            <div class="veh-img">
+              <img
+                src="${v.imageUrl || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80'}"
+                alt="${v.brand} ${v.model}"
+                loading="lazy"
+              >
+              <span class="veh-type-chip">${v.vehicleType}</span>
+              <span class="veh-avail-tag ${tagClass}">${tagLabel}</span>
+            </div>
+            <div class="veh-body">
+              <div class="veh-name">${v.brand} ${v.model}</div>
+              <div class="veh-reg"><i class="fa-solid fa-id-card" style="font-size:0.7rem;"></i> ${v.registrationNo}</div>
+              <div class="veh-specs">
+                <span><i class="fa-solid fa-users"></i> ${v.seatingCapacity || 5} Seats</span>
+                <span><i class="fa-solid fa-gas-pump"></i> ${v.fuelType || 'Petrol'}</span>
+                <span><i class="fa-solid fa-gears"></i> ${v.transmission || 'Auto'}</span>
+              </div>
+              <div class="veh-footer">
+                <div class="veh-price">
+                  <div class="num">$${v.dailyRate}</div>
+                  <div class="unit">per day</div>
+                </div>
+                <a href="customer-login.html" class="veh-book-btn" ${btnDisabled}>${btnText}</a>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch(e) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:2rem;">Could not load fleet.</div>';
+      console.error('Fleet error', e);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadStats();
+    loadFleet();
+  });
+</script>
+</body>
+</html>

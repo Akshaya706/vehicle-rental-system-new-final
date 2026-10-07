@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - DriveEase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="top-nav">
+    <a href="index.html" class="brand-wrapper">
+      <div class="brand-icon-box" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+        <i class="fa-solid fa-user-gear"></i>
+      </div>
+      <div class="brand-text">
+        <h1>DriveEase</h1>
+        <p style="color: #f87171;">System Administration</p>
+      </div>
+    </a>
+    <div class="nav-actions">
+      <a href="index.html" class="btn btn-secondary btn-sm"><i class="fa-solid fa-house"></i> Home</a>
+      <a href="customer-login.html" class="btn btn-secondary btn-sm"><i class="fa-solid fa-user"></i> Customer Login</a>
+      <a href="manager-login.html" class="btn btn-secondary btn-sm"><i class="fa-solid fa-clipboard-check"></i> Manager Login</a>
+    </div>
+  </header>
+
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-portal-icon admin">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.35rem;">System Admin Login</h2>
+        <p style="color: var(--text-muted); font-size: 0.88rem;">Manage fleet inventory, user accounts, compliance & analytics</p>
+      </div>
+
+      <!-- Demo Credentials Box -->
+      <div class="demo-credentials-box">
+        <div>
+          <span>Admin Demo Account:</span><br>
+          <code>admin</code> / <code>admin123</code>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="quickFillAdmin()">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Fill
+        </button>
+      </div>
+
+      <!-- Sign In Form -->
+      <form onsubmit="handleAdminLogin(event)">
+        <div class="form-group">
+          <label><i class="fa-solid fa-user-tie"></i> Admin Username</label>
+          <input type="text" id="adminUsername" class="form-control" placeholder="Enter admin username" required>
+        </div>
+
+        <div class="form-group">
+          <label><i class="fa-solid fa-lock"></i> Security Password</label>
+          <input type="password" id="adminPassword" class="form-control" placeholder="Enter admin password" required>
+        </div>
+
+        <button type="submit" id="adminSubmitBtn" class="btn btn-danger" style="width: 100%; padding: 0.8rem; margin-top: 0.5rem; font-weight: 700;">
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In to Admin Dashboard
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div id="toastBox"></div>
+
+  <script src="js/api.js"></script>
+  <script>
+    function quickFillAdmin() {
+      document.getElementById('adminUsername').value = 'admin';
+      document.getElementById('adminPassword').value = 'admin123';
+      showToast('Filled Administrator credentials', 'info');
+    }
+
+    async function handleAdminLogin(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('adminSubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authenticating administrator...';
+
+      const username = document.getElementById('adminUsername').value;
+      const password = document.getElementById('adminPassword').value;
+
+      try {
+        const res = await apiPost('/auth/login', {
+          username: username,
+          password: password,
+          requiredRole: 'ADMIN'
+        });
+
+        if (res.success) {
+          setCurrentUser(res);
+          showToast('Admin authentication granted', 'success');
+          setTimeout(() => {
+            window.location.href = 'admin-dashboard.html';
+          }, 600);
+        }
+      } catch (err) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In to Admin Dashboard';
+      }
+    }
+  </script>
+</body>
+</html>

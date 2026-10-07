@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Dashboard - DriveEase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="top-nav">
+    <div class="brand-wrapper">
+      <div class="brand-icon-box">
+        <i class="fa-solid fa-car-rear"></i>
+      </div>
+      <div class="brand-text">
+        <h1>DriveEase</h1>
+        <p>Customer Portal</p>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <div class="user-badge">
+        <i class="fa-solid fa-user-circle" style="color: #38bdf8; font-size: 1.2rem;"></i>
+        <span id="custNavName">Customer</span>
+        <span class="role-tag role-customer" id="custNavDl">DL Validated</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="logout('customer-login.html')">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </button>
+    </div>
+  </header>
+
+  <main class="dashboard-container">
+
+    <!-- Customer Metric KPI Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon cyan"><i class="fa-solid fa-key"></i></div>
+        <div class="stat-content">
+          <div class="stat-val" id="kpiActiveRentals">0</div>
+          <div class="stat-label">Active Rentals on Road</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon amber"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        <div class="stat-content">
+          <div class="stat-val" id="kpiPendingApprovals">0</div>
+          <div class="stat-label">Pending Manager Approval</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="stat-content">
+          <div class="stat-val" id="kpiCompletedTrips">0</div>
+          <div class="stat-label">Completed Trips</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue"><i class="fa-solid fa-receipt"></i></div>
+        <div class="stat-content">
+          <div class="stat-val" id="kpiTotalSpent">$0.00</div>
+          <div class="stat-label">Total Amount Spent</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchCustTab('browseTab', this)">
+        <i class="fa-solid fa-magnifying-glass"></i> Browse & Reserve Vehicles
+      </button>
+      <button class="tab-btn" onclick="switchCustTab('bookingsTab', this)">
+        <i class="fa-solid fa-calendar-check"></i> My Reservations & Trips <span id="bookingCountBadge" class="badge badge-info" style="font-size: 0.65rem; margin-left: 0.25rem;">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchCustTab('invoicesTab', this)">
+        <i class="fa-solid fa-file-invoice-dollar"></i> Invoices & Receipts
+      </button>
+      <button class="tab-btn" onclick="switchCustTab('profileTab', this)">
+        <i class="fa-solid fa-id-card"></i> My Customer Profile
+      </button>
+    </div>
+
+    <!-- TAB 1: BROWSE & SEARCH FLEET -->
+    <div id="browseTab" class="tab-content active">
+      <div class="glass-panel">
+        <div class="panel-title">
+          <h3><i class="fa-solid fa-filter" style="color: #38bdf8;"></i> Search Fleet Catalog (FR11)</h3>
+          <button class="btn btn-secondary btn-sm" onclick="resetFilters()">
+            <i class="fa-solid fa-rotate-left"></i> Reset
+          </button>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Vehicle Type</label>
+            <select id="filterType" class="form-control" onchange="loadCatalog()">
+              <option value="ALL">All Categories</option>
+              <optgroup label="Cars">
+                <option value="Car">Car (All Car Types)</option>
+                <option value="Sedan">Sedan</option>
+                <option value="SUV">SUV</option>
+                <option value="Luxury">Luxury</option>
+                <option value="Electric">Electric</option>
+                <option value="Hatchback">Hatchback</option>
+                <option value="Coupe">Coupe</option>
+                <option value="Van">Van / Minivan</option>
+                <option value="Pickup">Pickup Truck</option>
+                <option value="Convertible">Convertible</option>
+              </optgroup>
+              <optgroup label="Two-Wheelers">
+                <option value="Bike">Bike / Motorcycle</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Brand / Make</label>
+            <input type="text" id="filterBrand" class="form-control" placeholder="e.g. Tesla, BMW, Jeep" oninput="loadCatalog()">
+          </div>
+          <div class="form-group">
+            <label>Max Daily Rate ($)</label>
+            <input type="number" id="filterMaxRate" class="form-control" placeholder="e.g. 100" oninput="loadCatalog()">
+          </div>
+          <div class="form-group">
+            <label>Availability</label>
+            <select id="filterAvail" class="form-control" onchange="loadCatalog()">
+              <option value="AVAILABLE">Available Now</option>
+              <option value="ALL">All Statuses</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="vehicles-grid" id="catalogGrid">
+        <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted);">
+          <i class="fa-solid fa-spinner fa-spin fa-2x"></i><br>Loading vehicle catalog...
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: MY BOOKINGS -->
+    <div id="bookingsTab" class="tab-content">
+      <div class="glass-panel">
+        <div class="panel-title">
+          <h3><i class="fa-solid fa-list-check" style="color: #38bdf8;"></i> My Bookings & Rental History</h3>
+          <button class="btn btn-secondary btn-sm" onclick="loadMyBookings()">
+            <i class="fa-solid fa-rotate"></i> Refresh
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Booking #</th>
+                <th>Vehicle</th>
+                <th>Dates</th>
+                <th>Duration & Rate</th>
+                <th>Total Charge</th>
+                <th>Reservation Status</th>
+                <th>Payment</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="myBookingsTbody">
+              <tr>
+                <td colspan="8" style="text-align: center; color: var(--text-muted);">Loading bookings...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: INVOICES -->
+    <div id="invoicesTab" class="tab-content">
+      <div class="glass-panel">
+        <div class="panel-title">
+          <h3><i class="fa-solid fa-file-invoice" style="color: #38bdf8;"></i> Rental Invoices & Payment Ledger</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Invoice Ref</th>
+                <th>Booking ID</th>
+                <th>Vehicle</th>
+                <th>Payment Method</th>
+                <th>Payment Date</th>
+                <th>Amount Paid</th>
+                <th>Status</th>
+                <th>View Document</th>
+              </tr>
+            </thead>
+            <tbody id="invoicesTbody">
+              <tr>
+                <td colspan="8" style="text-align: center; color: var(--text-muted);">No invoices yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: PROFILE -->
+    <div id="profileTab" class="tab-content">
+      <div class="glass-panel" style="max-width: 720px; margin: 0 auto;">
+        <div class="panel-title">
+          <h3><i class="fa-solid fa-id-card-clip" style="color: #38bdf8;"></i> Customer Profile & Driving Licence</h3>
+        </div>
+        <div style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.2); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1.25rem;">
+          <div style="width: 56px; height: 56px; border-radius: 50%; background: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white;">
+            <i class="fa-solid fa-id-card"></i>
+          </div>
+          <div>
+            <h4 id="profName" style="font-size: 1.2rem; font-weight: 700;">Customer Name</h4>
+            <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+              Driving Licence: <span id="profDl" style="color: #38bdf8; font-weight: 700;">DL-XXXX</span>
+              <span class="badge badge-success" style="margin-left: 0.5rem; font-size: 0.68rem;"><i class="fa-solid fa-check"></i> Validated by System</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input type="text" id="profPhone" class="form-control" readonly>
+          </div>
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="profUsername" class="form-control" readonly>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Registered Billing Address</label>
+          <input type="text" id="profAddress" class="form-control" readonly>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- 1. Booking & Dynamic Price Calculator Modal -->
+  <div class="modal-overlay" id="bookingModal">
+    <div class="modal-box">
+      <button class="modal-close-btn" onclick="closeBookingModal()"><i class="fa-solid fa-xmark"></i></button>
+      <div style="margin-bottom: 1.25rem;">
+        <h3 id="modalVehTitle" style="font-size: 1.35rem; font-weight: 800; color: #38bdf8;">Reserve Vehicle</h3>
+        <p id="modalVehMeta" style="color: var(--text-muted); font-size: 0.85rem;">Tesla Model 3 Long Range &bull; $85.00/day base rate</p>
+      </div>
+
+      <form onsubmit="submitBookingRequest(event)">
+        <input type="hidden" id="bookVehicleId">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Rental Start Date</label>
+            <input type="date" id="bookStartDate" class="form-control" required onchange="calculateDynamicPrice()">
+          </div>
+          <div class="form-group">
+            <label>Rental End Date</label>
+            <input type="date" id="bookEndDate" class="form-control" required onchange="calculateDynamicPrice()">
+          </div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-glass); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.25rem;">
+          <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.75rem; display: block;">
+            Optional Add-ons (FR6 Additional Charges):
+          </label>
+          <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+              <input type="checkbox" id="chkInsurance" onchange="calculateDynamicPrice()">
+              <span>Zero-Deductible Insurance (+$15/day)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+              <input type="checkbox" id="chkGps" onchange="calculateDynamicPrice()">
+              <span>GPS Navigation Unit (+$5/day)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Dynamic Price Breakdown Card (FR6) -->
+        <div style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.25); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
+          <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: #38bdf8; margin-bottom: 0.5rem; letter-spacing: 0.05em;">
+            <i class="fa-solid fa-calculator"></i> Dynamic Pricing Breakdown (FR6)
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.35rem;">
+            <span style="color: var(--text-muted);">Rental Duration:</span>
+            <span id="calcDays" style="font-weight: 600;">1 Day</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.35rem;">
+            <span style="color: var(--text-muted);">Base Daily Rate:</span>
+            <span id="calcBaseRate" style="font-weight: 600;">$0.00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.35rem;">
+            <span style="color: var(--text-muted);">Pricing Tier:</span>
+            <span id="calcTier" class="badge badge-info" style="font-size: 0.72rem;">Standard Daily</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.35rem;">
+            <span style="color: var(--text-muted);">Add-on Charges:</span>
+            <span id="calcExtras" style="font-weight: 600;">$0.00</span>
+          </div>
+          <div style="border-top: 1px solid rgba(255, 255, 255, 0.1); margin-top: 0.5rem; padding-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 700; font-size: 1rem;">Total Rental Charge:</span>
+            <span id="calcTotal" style="font-size: 1.5rem; font-weight: 800; color: #38bdf8;">$0.00</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Trip Notes / Requirements (Optional)</label>
+          <input type="text" id="bookNotes" class="form-control" placeholder="e.g. Airport pickup or early morning delivery">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeBookingModal()">Cancel</button>
+          <button type="submit" id="bookSubmitBtn" class="btn btn-primary" style="background: linear-gradient(135deg, #0284c7, #06b6d4);">
+            <i class="fa-solid fa-paper-plane"></i> Submit Reservation Request
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Payment Modal (FR7) -->
+  <div class="modal-overlay" id="paymentModal">
+    <div class="modal-box">
+      <button class="modal-close-btn" onclick="closePaymentModal()"><i class="fa-solid fa-xmark"></i></button>
+      <div style="margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.35rem; font-weight: 800; color: #34d399;"><i class="fa-solid fa-credit-card"></i> Process Online Payment (FR7)</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">SRS Constraint: Customers must complete payment before vehicle collection</p>
+      </div>
+
+      <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.35rem;">
+          <span style="color: var(--text-muted);">Booking Reference:</span>
+          <span id="payBookingIdText" style="font-weight: 700;">#000</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.35rem;">
+          <span style="color: var(--text-muted);">Reserved Vehicle:</span>
+          <span id="payVehicleTitle" style="font-weight: 600;">Vehicle</span>
+        </div>
+        <div style="border-top: 1px solid rgba(255, 255, 255, 0.1); margin-top: 0.5rem; padding-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 700; font-size: 1.05rem;">Amount Due:</span>
+          <span id="payAmountDue" style="font-size: 1.6rem; font-weight: 800; color: #34d399;">$0.00</span>
+        </div>
+      </div>
+
+      <form onsubmit="submitPayment(event)">
+        <input type="hidden" id="payBookingId">
+        <input type="hidden" id="payAmountValue">
+
+        <div class="form-group">
+          <label>Select Payment Method</label>
+          <select id="payMethod" class="form-control">
+            <option value="Credit Card">Credit Card</option>
+            <option value="Debit Card">Debit Card</option>
+            <option value="UPI">UPI (Instant Payment)</option>
+            <option value="Net Banking">Net Banking</option>
+          </select>
+        </div>
+
+        <div id="cardFieldsBox">
+          <div class="form-group">
+            <label>Card Number</label>
+            <input type="text" class="form-control" placeholder="•••• •••• •••• 4242" value="4532 •••• •••• 9921">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Expiry (MM/YY)</label>
+              <input type="text" class="form-control" placeholder="08/28" value="12/28">
+            </div>
+            <div class="form-group">
+              <label>CVV</label>
+              <input type="password" class="form-control" placeholder="•••" value="888">
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closePaymentModal()">Cancel</button>
+          <button type="submit" id="paySubmitBtn" class="btn btn-success">
+            <i class="fa-solid fa-lock"></i> Authorize & Pay Now
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- 4. Review & Rating Modal (FR12) -->
+  <div class="modal-overlay" id="reviewModal">
+    <div class="modal-box">
+      <button class="modal-close-btn" onclick="closeReviewModal()"><i class="fa-solid fa-xmark"></i></button>
+      <div style="margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.35rem; font-weight: 800; color: #fbbf24;"><i class="fa-solid fa-star"></i> Vehicle Feedback & Review (FR12)</h3>
+        <p id="reviewVehName" style="color: var(--text-muted); font-size: 0.85rem;">Rate your rental experience</p>
+      </div>
+
+      <form onsubmit="submitVehicleReview(event)">
+        <input type="hidden" id="reviewBookingId">
+        <input type="hidden" id="reviewVehicleId">
+
+        <div class="form-group">
+          <label>Rating (1 to 5 Stars)</label>
+          <select id="reviewRating" class="form-control" style="font-size: 1.1rem; color: #fbbf24;">
+            <option value="5">★★★★★ - Excellent (5 Stars)</option>
+            <option value="4">★★★★☆ - Very Good (4 Stars)</option>
+            <option value="3">★★★☆☆ - Good (3 Stars)</option>
+            <option value="2">★★☆☆☆ - Fair (2 Stars)</option>
+            <option value="1">★☆☆☆☆ - Poor (1 Star)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Your Review / Experience Comments</label>
+          <textarea id="reviewComment" class="form-control" rows="3" placeholder="Share your experience driving this vehicle..."></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeReviewModal()">Cancel</button>
+          <button type="submit" class="btn btn-amber"><i class="fa-solid fa-paper-plane"></i> Submit Feedback</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. Invoice Printable Modal (FR7) -->
+  <div class="modal-overlay" id="invoiceModal">
+    <div class="modal-box" style="max-width: 680px;">
+      <button class="modal-close-btn" onclick="closeInvoiceModal()"><i class="fa-solid fa-xmark"></i></button>
+      <div id="invoicePrintArea">
+        <div style="border-bottom: 2px solid var(--border-glass); padding-bottom: 1rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; color: #38bdf8;">DriveEase Rental Invoice</h2>
+            <p style="color: var(--text-muted); font-size: 0.82rem;">Official Tax Invoice & Receipt</p>
+          </div>
+          <div style="text-align: right;">
+            <div id="invNum" style="font-weight: 800; font-size: 1.1rem;">INV-10001</div>
+            <div id="invDate" style="color: var(--text-muted); font-size: 0.82rem;">Oct 4, 2026</div>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-bottom: 1.25rem;">
+          <div style="background: rgba(255,255,255,0.02); padding: 0.85rem; border-radius: 8px;">
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Customer Details</div>
+            <div id="invCustName" style="font-weight: 700; margin-top: 0.25rem;">John Doe</div>
+            <div id="invCustPhone" style="font-size: 0.82rem; color: var(--text-muted);">+1 555-0144</div>
+            <div id="invCustDl" style="font-size: 0.82rem; color: #38bdf8;">DL: DL-US-2023-9981</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.02); padding: 0.85rem; border-radius: 8px;">
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Vehicle Information</div>
+            <div id="invVehTitle" style="font-weight: 700; margin-top: 0.25rem;">Tesla Model 3</div>
+            <div id="invVehReg" style="font-size: 0.82rem; color: var(--text-muted);">Reg: EV-TES-101</div>
+            <div id="invPaymentStatus" class="badge badge-success" style="margin-top: 0.35rem;">PAID</div>
+          </div>
+        </div>
+
+        <table class="custom-table" style="margin-bottom: 1.25rem;">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Period</th>
+              <th>Rate / Multiplier</th>
+              <th style="text-align: right;">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="invItemsTbody">
+            <!-- Dynamic invoice rows -->
+          </tbody>
+        </table>
+
+        <div style="border-top: 1px solid var(--border-glass); padding-top: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span style="font-size: 0.82rem; color: var(--text-muted);">Payment Method: <strong id="invPayMethod" style="color: var(--text-main);">Credit Card</strong></span><br>
+            <span style="font-size: 0.82rem; color: var(--text-muted);">Transaction Ref: <code id="invTxnRef">TXN-XXXX</code></span>
+          </div>
+          <div style="text-align: right;">
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Grand Total</span>
+            <div id="invGrandTotal" style="font-size: 1.6rem; font-weight: 800; color: #34d399;">$0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; border-top: 1px solid var(--border-glass); padding-top: 1rem;">
+        <button type="button" class="btn btn-secondary" onclick="closeInvoiceModal()">Close</button>
+        <button type="button" class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> Print Invoice</button>
+      </div>
+    </div>
+  </div>
+  <!-- 6. Pay Pending Amount Modal (Damage & Late Fees) -->
+  <div class="modal-overlay" id="finalPaymentModal">
+    <div class="modal-box">
+      <button class="modal-close-btn" onclick="closeFinalPaymentModal()"><i class="fa-solid fa-xmark"></i></button>
+      <div style="margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.35rem; font-weight: 800; color: #f87171;"><i class="fa-solid fa-triangle-exclamation"></i> Settle Pending Charges &amp; Close Order</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Pay remaining pending charges (damage / late return penalties) to close your rental order.</p>
+      </div>
+
+      <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.4rem;" id="finalRowDamage">
+          <span style="color: var(--text-muted);"><i class="fa-solid fa-car-burst" style="color:#f87171;"></i> Damage Repair Fee:</span>
+          <span id="finalDamageFeeText" style="font-weight: 700; color: #f87171;">$0.00</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.4rem;" id="finalRowLate">
+          <span style="color: var(--text-muted);"><i class="fa-solid fa-clock" style="color:#f87171;"></i> Late Return Penalty:</span>
+          <span id="finalLateFeeText" style="font-weight: 700; color: #f87171;">$0.00</span>
+        </div>
+        <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 0.6rem; padding-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 800; font-size: 1rem;">Total Pending Due:</span>
+          <span id="finalTotalText" style="font-size: 1.6rem; font-weight: 800; color: #f87171;">$0.00</span>
+        </div>
+      </div>
+
+      <form onsubmit="submitFinalPayment(event)">
+        <input type="hidden" id="finalPayBookingId">
+
+        <div class="form-group">
+          <label>Select Payment Method</label>
+          <select id="finalPayMethod" class="form-control">
+            <option value="Credit Card">Credit Card</option>
+            <option value="Debit Card">Debit Card</option>
+            <option value="UPI">UPI (Instant Payment)</option>
+            <option value="Net Banking">Net Banking</option>
+            <option value="Cash">Cash at Counter</option>
+          </select>
+        </div>
+
+        <div style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem;">
+          <p style="font-size: 0.82rem; color: #34d399; margin: 0;"><i class="fa-solid fa-circle-check"></i> <strong>Immediate Order Closure:</strong> Once this pending balance is paid, your booking status will immediately become <strong>ORDER CLOSED</strong> and vehicle returned to the fleet.</p>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeFinalPaymentModal()">Cancel</button>
+          <button type="submit" id="finalPaySubmitBtn" class="btn btn-success" style="background: linear-gradient(135deg, #059669, #10b981);">
+            <i class="fa-solid fa-circle-check"></i> Pay Pending Amount &amp; Close Order
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toastBox"></div>
+
+  <script src="js/api.js"></script>
+  <script>
+    // Enforce role guard: user must be CUSTOMER
+    const currentUser = requireRole('CUSTOMER', 'customer-login.html');
+    let customerData = null;
+    let myBookingsList = [];
+    let selectedVehicleForBooking = null;
+
+    function switchCustTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+
+      if (tabId === 'bookingsTab') loadMyBookings();
+      if (tabId === 'invoicesTab') loadMyInvoices();
+    }
+
+    async function initCustomerDashboard() {
+      if (!currentUser) return;
+      document.getElementById('custNavName').textContent = currentUser.fullName || currentUser.username;
+
+      // Fetch full customer details
+      try {
+        customerData = await apiGet(`/customers/user/${currentUser.userId}`);
+        if (customerData) {
+          document.getElementById('custNavDl').textContent = customerData.drivingLicence;
+          document.getElementById('profName').textContent = customerData.name;
+          document.getElementById('profDl').textContent = customerData.drivingLicence;
+          document.getElementById('profPhone').value = customerData.phone;
+          document.getElementById('profAddress').value = customerData.address;
+          document.getElementById('profUsername').value = currentUser.username;
+        }
+      } catch (e) {
+        console.warn('Customer profile load note:', e);
+      }
+
+      // Set default dates in booking modal
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const afterTomorrow = new Date();
+      afterTomorrow.setDate(afterTomorrow.getDate() + 3);
+
+      document.getElementById('bookStartDate').value = tomorrow.toISOString().split('T')[0];
+      document.getElementById('bookEndDate').value = afterTomorrow.toISOString().split('T')[0];
+
+      await loadCatalog();
+      await loadMyBookings();
+    }
+
+    async function loadCatalog() {
+      const type = document.getElementById('filterType').value;
+      const brand = document.getElementById('filterBrand').value;
+      const maxRate = document.getElementById('filterMaxRate').value;
+      const avail = document.getElementById('filterAvail').value;
+
+      let query = `?type=${encodeURIComponent(type)}&brand=${encodeURIComponent(brand)}&availability=${encodeURIComponent(avail)}`;
+      if (maxRate) query += `&maxRate=${encodeURIComponent(maxRate)}`;
+
+      const grid = document.getElementById('catalogGrid');
+      try {
+        const vehicles = await apiGet(`/vehicles${query}`);
+        if (!vehicles || vehicles.length === 0) {
+          grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted);"><i class="fa-solid fa-car fa-2x"></i><br>No vehicles match your search criteria.</div>';
+          return;
+        }
+
+        grid.innerHTML = vehicles.map(v => {
+          let badgeClass = 'badge-success';
+          let bookDisabled = '';
+          let bookBtnText = '<i class="fa-solid fa-calendar-check"></i> Book Now';
+
+          if (v.availability === 'BOOKED') {
+            badgeClass = 'badge-warning';
+            bookDisabled = 'disabled style="opacity:0.6; cursor:not-allowed;"';
+            bookBtnText = 'Reserved';
+          } else if (v.availability === 'RENTED') {
+            badgeClass = 'badge-purple';
+            bookDisabled = 'disabled style="opacity:0.6; cursor:not-allowed;"';
+            bookBtnText = 'On Road';
+          } else if (v.availability === 'UNDER_MAINTENANCE') {
+            badgeClass = 'badge-danger';
+            bookDisabled = 'disabled style="opacity:0.6; cursor:not-allowed;"';
+            bookBtnText = 'In Service';
+          }
+
+          return `
+            <div class="vehicle-card">
+              <div class="vehicle-img-wrapper">
+                <img src="${v.imageUrl || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80'}" alt="${v.brand} ${v.model}">
+                <span class="badge ${badgeClass} vehicle-badge-pill">${v.availability}</span>
+              </div>
+              <div class="vehicle-info">
+                <div class="vehicle-title">${v.brand} ${v.model}</div>
+                <div class="vehicle-meta">
+                  <span><i class="fa-solid fa-tag"></i> ${v.vehicleType}</span> &bull;
+                  <span><i class="fa-solid fa-id-card"></i> ${v.registrationNo}</span>
+                </div>
+                <div class="vehicle-features">
+                  <span><i class="fa-solid fa-users"></i> ${v.seatingCapacity || 5} Seats</span>
+                  <span><i class="fa-solid fa-gas-pump"></i> ${v.fuelType || 'Petrol'}</span>
+                  <span><i class="fa-solid fa-gears"></i> ${v.transmission || 'Automatic'}</span>
+                </div>
+                <div class="vehicle-pricing">
+                  <div class="price-box">
+                    <span class="price-num">$${v.dailyRate}</span>
+                    <span class="price-unit">/ day</span>
+                  </div>
+                  <button class="btn btn-primary btn-sm" ${bookDisabled} onclick="openBookingModal(${v.vehicleId})">
+                    ${bookBtnText}
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (e) {
+        console.error('Catalog load error:', e);
+      }
+    }
+
+    function resetFilters() {
+      document.getElementById('filterType').value = 'ALL';
+      document.getElementById('filterBrand').value = '';
+      document.getElementById('filterMaxRate').value = '';
+      document.getElementById('filterAvail').value = 'AVAILABLE';
+      loadCatalog();
+    }
+
+    // Dynamic Price Calculator
+    async function openBookingModal(vehicleId) {
+      try {
+        selectedVehicleForBooking = await apiGet(`/vehicles/${vehicleId}`);
+        document.getElementById('bookVehicleId').value = selectedVehicleForBooking.vehicleId;
+        document.getElementById('modalVehTitle').textContent = `Reserve ${selectedVehicleForBooking.brand} ${selectedVehicleForBooking.model}`;
+        document.getElementById('modalVehMeta').textContent = `${selectedVehicleForBooking.vehicleType} • Registration: ${selectedVehicleForBooking.registrationNo} • Base: $${selectedVehicleForBooking.dailyRate}/day`;
+        
+        await calculateDynamicPrice();
+        document.getElementById('bookingModal').classList.add('active');
+      } catch (err) {
+        // Handled
+      }
+    }
+
+    function closeBookingModal() {
+      document.getElementById('bookingModal').classList.remove('active');
+    }
+
+    async function calculateDynamicPrice() {
+      if (!selectedVehicleForBooking) return;
+      const start = document.getElementById('bookStartDate').value;
+      const end = document.getElementById('bookEndDate').value;
+      if (!start || !end) return;
+
+      const insurance = document.getElementById('chkInsurance').checked;
+      const gps = document.getElementById('chkGps').checked;
+
+      try {
+        const resp = await apiPost('/bookings/calculate-price', {
+          vehicleId: selectedVehicleForBooking.vehicleId,
+          startDate: start,
+          endDate: end,
+          insuranceWaiver: insurance,
+          gpsNavigation: gps
+        });
+
+        document.getElementById('calcDays').textContent = `${resp.rentalDays} Day${resp.rentalDays > 1 ? 's' : ''}`;
+        document.getElementById('calcBaseRate').textContent = `$${resp.dailyRate.toFixed(2)}/day`;
+        document.getElementById('calcTier').textContent = resp.pricingTierName;
+        document.getElementById('calcExtras').textContent = `$${resp.extraCharges.toFixed(2)}`;
+        document.getElementById('calcTotal').textContent = `$${resp.totalRentalCharge.toFixed(2)}`;
+      } catch (err) {
+        console.warn('Calculation error:', err);
+      }
+    }
+
+    async function submitBookingRequest(e) {
+      e.preventDefault();
+      if (!customerData) {
+        showToast('Customer record not found. Please re-login.', 'error');
+        return;
+      }
+
+      const submitBtn = document.getElementById('bookSubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+
+      const payload = {
+        customerId: customerData.customerId,
+        vehicleId: Number(document.getElementById('bookVehicleId').value),
+        rentalStartDate: document.getElementById('bookStartDate').value,
+        rentalEndDate: document.getElementById('bookEndDate').value,
+        insuranceWaiver: document.getElementById('chkInsurance').checked,
+        gpsNavigation: document.getElementById('chkGps').checked,
+        notes: document.getElementById('bookNotes').value
+      };
+
+      try {
+        const res = await apiPost('/bookings', payload);
+        showToast('Reservation submitted! Sent to Rental Manager for approval.', 'success');
+        closeBookingModal();
+        await loadCatalog();
+        await loadMyBookings();
+        // Switch to bookings tab
+        switchCustTab('bookingsTab', document.querySelectorAll('.tab-btn')[1]);
+      } catch (err) {
+        // Handled in apiPost
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Reservation Request';
+      }
+    }
+
+    async function loadMyBookings() {
+      if (!customerData) return;
+      try {
+        const bookings = await apiGet(`/bookings?customerId=${customerData.customerId}`);
+        myBookingsList = bookings || [];
+
+        // Update KPIs
+        let active = 0, pending = 0, completed = 0, spent = 0;
+        myBookingsList.forEach(b => {
+          if (b.bookingStatus === 'ACTIVE') active++;
+          if (b.bookingStatus === 'PENDING_APPROVAL') pending++;
+          if (b.bookingStatus === 'COMPLETED') completed++;
+          if (b.paymentStatus === 'PAID') spent += (b.totalCharge || 0);
+        });
+
+        document.getElementById('kpiActiveRentals').textContent = active;
+        document.getElementById('kpiPendingApprovals').textContent = pending;
+        document.getElementById('kpiCompletedTrips').textContent = completed;
+        document.getElementById('kpiTotalSpent').textContent = formatCurrency(spent);
+        document.getElementById('bookingCountBadge').textContent = myBookingsList.length;
+
+        const tbody = document.getElementById('myBookingsTbody');
+        if (myBookingsList.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No reservations found. Go to Browse Fleet to reserve your first vehicle!</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = myBookingsList.map(b => {
+          const veh = b.vehicle || {};
+          let statusBadge = 'badge-info';
+          let statusText = b.bookingStatus;
+          if (b.bookingStatus === 'PENDING_APPROVAL') statusBadge = 'badge-warning';
+          if (b.bookingStatus === 'APPROVED') statusBadge = 'badge-success';
+          if (b.bookingStatus === 'ACTIVE') statusBadge = 'badge-purple';
+          if (b.bookingStatus === 'COMPLETED') {
+            statusBadge = 'badge-success';
+            statusText = '<i class="fa-solid fa-circle-check"></i> Order Closed';
+          }
+          if (b.bookingStatus === 'CANCELLED') statusBadge = 'badge-danger';
+          if (b.bookingStatus === 'PENDING_FINAL_PAYMENT') {
+            statusBadge = 'badge-danger';
+            statusText = '<i class="fa-solid fa-triangle-exclamation"></i> Pending Payment';
+          }
+          if (b.bookingStatus === 'REJECTED') statusBadge = 'badge-danger';
+
+          let payBadge = b.paymentStatus === 'PAID' ? 'badge-success' : 'badge-warning';
+
+          // Contextual Action Buttons
+          let actionBtns = '';
+          if (b.bookingStatus === 'APPROVED' && b.paymentStatus !== 'PAID') {
+            actionBtns += `<button class="btn btn-success btn-sm" onclick="openPaymentModal(${b.bookingId})"><i class="fa-solid fa-credit-card"></i> Pay Upfront Now</button>`;
+          }
+          if (b.bookingStatus === 'PENDING_FINAL_PAYMENT') {
+            const pendingDmg = b.damageFee || 0;
+            const pendingLate = b.lateFee || 0;
+            const pendingTotal = pendingDmg + pendingLate;
+            actionBtns += `<button class="btn btn-danger btn-sm" onclick="openFinalPaymentModal(${b.bookingId}, ${pendingTotal}, ${pendingDmg}, ${pendingLate})" style="background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 2px 8px rgba(239,68,68,0.3); font-weight: 700;"><i class="fa-solid fa-credit-card"></i> Pay Pending Amount ($${pendingTotal.toFixed(2)})</button>`;
+          }
+          if (b.bookingStatus === 'PENDING_APPROVAL') {
+            actionBtns += `<button class="btn btn-danger btn-sm" onclick="cancelBookingAction(${b.bookingId})"><i class="fa-solid fa-ban"></i> Cancel</button>`;
+          }
+          if (b.bookingStatus === 'COMPLETED') {
+            actionBtns += `<span class="badge badge-success" style="font-size:0.75rem; padding:0.35rem 0.65rem;"><i class="fa-solid fa-lock"></i> Order Closed</span>`;
+            actionBtns += ` <button class="btn btn-secondary btn-sm" onclick="openReviewModal(${b.bookingId}, ${b.vehicleId}, '${veh.brand || ''} ${veh.model || ''}')"><i class="fa-solid fa-star" style="color:#fbbf24;"></i> Review</button>`;
+          }
+          if (b.paymentStatus === 'PAID' || b.bookingStatus === 'COMPLETED' || b.bookingStatus === 'PENDING_FINAL_PAYMENT') {
+            actionBtns += ` <button class="btn btn-secondary btn-sm" onclick="viewInvoiceModal(${b.bookingId})"><i class="fa-solid fa-file-invoice"></i> Receipt</button>`;
+          }
+
+          return `
+            <tr>
+              <td><strong>#${b.bookingId}</strong></td>
+              <td>
+                <div style="font-weight: 700;">${veh.brand || 'Vehicle'} ${veh.model || ''}</div>
+                <span style="font-size: 0.78rem; color: var(--text-muted);">${veh.registrationNo || ''} &bull; ${veh.vehicleType || ''}</span>
+              </td>
+              <td>
+                <div style="font-size: 0.85rem;">${formatDate(b.rentalStartDate)} &rarr; ${formatDate(b.rentalEndDate)}</div>
+              </td>
+              <td>
+                <div>${b.rentalDays} Days</div>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">$${b.baseDailyRate}/day</span>
+              </td>
+              <td style="font-weight: 700; color: #38bdf8;">${formatCurrency(b.totalCharge)}</td>
+              <td><span class="badge ${statusBadge}">${statusText}</span></td>
+              <td><span class="badge ${payBadge}">${b.paymentStatus}</span></td>
+              <td><div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">${actionBtns || '<span style="color:var(--text-dim);">-</span>'}</div></td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) {
+        console.error('Bookings load error:', e);
+      }
+    }
+
+    // Payment Logic (FR7)
+    function openPaymentModal(bookingId) {
+      const b = myBookingsList.find(x => x.bookingId === bookingId);
+      if (!b) return;
+
+      document.getElementById('payBookingId').value = b.bookingId;
+      document.getElementById('payBookingIdText').textContent = `#${b.bookingId}`;
+      document.getElementById('payVehicleTitle').textContent = `${b.vehicle?.brand || ''} ${b.vehicle?.model || ''} (${b.vehicle?.registrationNo || ''})`;
+      document.getElementById('payAmountDue').textContent = formatCurrency(b.totalCharge);
+      document.getElementById('payAmountValue').value = b.totalCharge;
+
+      document.getElementById('paymentModal').classList.add('active');
+    }
+
+    function closePaymentModal() {
+      document.getElementById('paymentModal').classList.remove('active');
+    }
+
+    async function submitPayment(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('paySubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing Secure Payment...';
+
+      const bookingId = Number(document.getElementById('payBookingId').value);
+      const method = document.getElementById('payMethod').value;
+      const amount = Number(document.getElementById('payAmountValue').value);
+
+      try {
+        const res = await apiPost('/payments', {
+          bookingId: bookingId,
+          paymentMethod: method,
+          amount: amount
+        });
+
+        showToast('Payment successful! Vehicle is now active and ready for pickup.', 'success');
+        closePaymentModal();
+        await loadMyBookings();
+        await viewInvoiceModal(bookingId);
+      } catch (err) {
+        // Handled
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Authorize & Pay Now';
+      }
+    }
+
+    // Final Payment Logic (Damage + Late fees before order close)
+    function openFinalPaymentModal(bookingId, totalAmt, damageFee, lateFee) {
+      document.getElementById('finalPayBookingId').value = bookingId;
+      document.getElementById('finalDamageFeeText').textContent = formatCurrency(damageFee || 0);
+      document.getElementById('finalLateFeeText').textContent = formatCurrency(lateFee || 0);
+      document.getElementById('finalTotalText').textContent = formatCurrency(totalAmt || 0);
+      document.getElementById('finalRowDamage').style.display = (damageFee > 0) ? 'flex' : 'none';
+      document.getElementById('finalRowLate').style.display = (lateFee > 0) ? 'flex' : 'none';
+      document.getElementById('finalPaymentModal').classList.add('active');
+    }
+
+    function closeFinalPaymentModal() {
+      document.getElementById('finalPaymentModal').classList.remove('active');
+    }
+
+    async function submitFinalPayment(e) {
+      e.preventDefault();
+      const bookingId = Number(document.getElementById('finalPayBookingId').value);
+      const method = document.getElementById('finalPayMethod').value;
+      const submitBtn = document.getElementById('finalPaySubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing Payment...';
+
+      try {
+        const res = await apiPost(`/bookings/${bookingId}/pay-final`, { paymentMethod: method });
+        showToast('Payment received in full! Order Closed. Vehicle returned to fleet.', 'success');
+        closeFinalPaymentModal();
+        await loadMyBookings();
+        await loadCatalog();
+        // Show the receipt
+        setTimeout(() => viewInvoiceModal(bookingId), 600);
+      } catch (err) {
+        // Handled by apiPost
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Pay Pending Amount &amp; Close Order';
+      }
+    }
+
+    // Review Modal (FR12)
+    function openReviewModal(bookingId, vehicleId, vehName) {
+      document.getElementById('reviewBookingId').value = bookingId;
+      document.getElementById('reviewVehicleId').value = vehicleId;
+      document.getElementById('reviewVehName').textContent = `Reviewing: ${vehName}`;
+      document.getElementById('reviewComment').value = '';
+      document.getElementById('reviewModal').classList.add('active');
+    }
+
+    function closeReviewModal() {
+      document.getElementById('reviewModal').classList.remove('active');
+    }
+
+    async function submitVehicleReview(e) {
+      e.preventDefault();
+      try {
+        await apiPost('/reviews', {
+          customerId: customerData.customerId,
+          vehicleId: Number(document.getElementById('reviewVehicleId').value),
+          bookingId: Number(document.getElementById('reviewBookingId').value),
+          rating: Number(document.getElementById('reviewRating').value),
+          comment: document.getElementById('reviewComment').value
+        });
+
+        showToast('Thank you for rating your trip! Feedback published.', 'success');
+        closeReviewModal();
+      } catch (err) {
+        // Handled
+      }
+    }
+
+    async function cancelBookingAction(bookingId) {
+      if (!confirm('Are you sure you want to cancel this booking reservation?')) return;
+      try {
+        await apiPost(`/bookings/${bookingId}/cancel`, { reason: 'Cancelled by customer' });
+        showToast('Booking cancelled.', 'info');
+        await loadMyBookings();
+        await loadCatalog();
+      } catch (err) {
+        // Handled
+      }
+    }
+
+    // Invoice View Modal (FR7)
+    async function viewInvoiceModal(bookingId) {
+      try {
+        const inv = await apiGet(`/payments/invoice/${bookingId}`);
+        document.getElementById('invNum').textContent = inv.invoiceNumber;
+        document.getElementById('invDate').textContent = formatDate(inv.invoiceDate);
+        
+        if (inv.customer) {
+          document.getElementById('invCustName').textContent = inv.customer.name;
+          document.getElementById('invCustPhone').textContent = inv.customer.phone;
+          document.getElementById('invCustDl').textContent = `DL: ${inv.customer.drivingLicence}`;
+        }
+
+        if (inv.vehicle) {
+          document.getElementById('invVehTitle').textContent = inv.vehicle.title;
+          document.getElementById('invVehReg').textContent = `Reg: ${inv.vehicle.registrationNo}`;
+        }
+
+        document.getElementById('invPaymentStatus').textContent = inv.paymentStatus;
+        document.getElementById('invPayMethod').textContent = inv.paymentMethod;
+        document.getElementById('invTxnRef').textContent = inv.transactionRef;
+        document.getElementById('invGrandTotal').textContent = formatCurrency(inv.totalAmount);
+
+        const itemsTbody = document.getElementById('invItemsTbody');
+        let rows = `
+          <tr>
+            <td>Base Rental (${inv.rentalDays} Days)</td>
+            <td>${formatDate(inv.rentalStartDate)} &rarr; ${formatDate(inv.rentalEndDate)}</td>
+            <td>$${inv.baseDailyRate}/day &bull; Mult: ${inv.dynamicMultiplier}x</td>
+            <td style="text-align: right; font-weight: 700;">${formatCurrency(inv.baseDailyRate * inv.rentalDays * inv.dynamicMultiplier)}</td>
+          </tr>
+        `;
+
+        if (inv.extraCharges && inv.extraCharges > 0) {
+          rows += `
+            <tr>
+              <td>Optional Add-ons (Insurance / GPS)</td>
+              <td>Rental Duration</td>
+              <td>Fixed package</td>
+              <td style="text-align: right; font-weight: 700;">${formatCurrency(inv.extraCharges)}</td>
+            </tr>
+          `;
+        }
+
+        if (inv.lateFee && inv.lateFee > 0) {
+          rows += `
+            <tr>
+              <td style="color: #fbbf24;">Late Return Charges</td>
+              <td>Overdue duration</td>
+              <td>Penalty rate</td>
+              <td style="text-align: right; font-weight: 700; color: #fbbf24;">${formatCurrency(inv.lateFee)}</td>
+            </tr>
+          `;
+        }
+
+
+        if (inv.damageFee && inv.damageFee > 0) {
+          rows += `
+            <tr>
+              <td style="color: #f87171;">Damage Inspection Charges</td>
+              <td>Post-trip inspection</td>
+              <td>Repair cost estimate</td>
+              <td style="text-align: right; font-weight: 700; color: #f87171;">${formatCurrency(inv.damageFee)}</td>
+            </tr>
+          `;
+        }
+
+        itemsTbody.innerHTML = rows;
+        document.getElementById('invoiceModal').classList.add('active');
+      } catch (err) {
+        // Handled
+      }
+    }
+
+    function closeInvoiceModal() {
+      document.getElementById('invoiceModal').classList.remove('active');
+    }
+
+    async function loadMyInvoices() {
+      if (!customerData) return;
+      try {
+        const payments = await apiGet('/payments');
+        const userPayments = (payments || []).filter(p => {
+          return myBookingsList.some(b => b.bookingId === p.bookingId);
+        });
+
+        const tbody = document.getElementById('invoicesTbody');
+        if (userPayments.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No payment receipts found.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = userPayments.map(p => {
+          const booking = myBookingsList.find(b => b.bookingId === p.bookingId) || {};
+          const veh = booking.vehicle || {};
+          return `
+            <tr>
+              <td><strong>INV-${10000 + p.bookingId}</strong></td>
+              <td>#${p.bookingId}</td>
+              <td>${veh.brand || 'Vehicle'} ${veh.model || ''}</td>
+              <td>${p.paymentMethod}</td>
+              <td>${formatDate(p.paymentDate)}</td>
+              <td style="font-weight: 700; color: #34d399;">${formatCurrency(p.amount)}</td>
+              <td><span class="badge badge-success">${p.paymentStatus}</span></td>
+              <td>
+                <button class="btn btn-secondary btn-sm" onclick="viewInvoiceModal(${p.bookingId})">
+                  <i class="fa-solid fa-file-invoice"></i> View Invoice
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) {
+        console.error('Invoices load error:', e);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initCustomerDashboard);
+  </script>
+</body>
+</html>

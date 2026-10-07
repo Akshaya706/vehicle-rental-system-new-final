@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rental Manager Dashboard - DriveEase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="top-nav">
+    <div class="brand-wrapper">
+      <div class="brand-icon-box" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+        <i class="fa-solid fa-clipboard-check"></i>
+      </div>
+      <div class="brand-text">
+        <h1>DriveEase</h1>
+        <p style="color: #fbbf24;">Rental Manager Operations Hub</p>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <div class="user-badge">
+        <i class="fa-solid fa-user-shield" style="color: #fbbf24; font-size: 1.2rem;"></i>
+        <span id="mgrNavName">Manager</span>
+        <span class="role-tag role-manager">Rental Manager</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="logout('manager-login.html')">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </button>
+    </div>
+  </header>
+
+  <main class="dashboard-container">
+
+    <!-- Manager KPI Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon amber"><i class="fa-solid fa-bell"></i></div>
+        <div class="stat-content">
+          <div class="stat-val" id="mgrKpiPending">0</div>
+          <div class="stat-label">Pending Booking Approvals</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon cyan"><i class="fa-solid fa-road"></i></div>
+        <div class="stat-content">
+          <div class="stat-val" id="mgrKpiActive">0</div>
+          <div class="stat-label">Active Rentals on Road</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green"><i class="fa-solid fa-handshake"></i></div>
+        <div class="stat-content">
+          <div class="stat-val" id="mgrKpiCompleted">0</div>
+          <div class="stat-label">Completed Vehicle Returns</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon purple"><i class="fa-solid fa-wrench"></i></div>
+        <div class="stat-content">
+          <div class="stat-val" id="mgrKpiMaintenance">0</div>
+          <div class="stat-label">Vehicles in Service</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchMgrTab('approvalsTab', this)">
+        <i class="fa-solid fa-check-to-slot"></i> Booking Approvals & Assignment (FR4) <span id="pendingBadge" class="badge badge-warning" style="font-size: 0.65rem; margin-left: 0.25rem;">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchMgrTab('returnsTab', this)">
+        <i class="fa-solid fa-car-side"></i> Vehicle Return & Damage Inspection (FR8, FR9)
+      </button>
+      <button class="tab-btn" onclick="switchMgrTab('maintTab', this)">
+        <i class="fa-solid fa-screwdriver-wrench"></i> Maintenance Scheduling (FR10)
+      </button>
+      <button class="tab-btn" onclick="switchMgrTab('damageLogTab', this)">
+        <i class="fa-solid fa-triangle-exclamation"></i> Damage Reports Log (FR9)
+      </button>
+      <button class="tab-btn" onclick="switchMgrTab('settlementsTab', this)">
+        <i class="fa-solid fa-receipt"></i> Payment & Return Settlements
+      </button>
+    </div>
+
+    <!-- TAB 1: BOOKING APPROVALS -->
+    <div id="approvalsTab" class="tab-content active">
+      <div class="glass-panel" style="margin-bottom: 2rem;">
+        <div class="panel-title">
+          <h3><i class="fa-solid fa-clipboard-question" style="color: #fbbf24;"></i> Pending Customer Reservations Awaiting Verification</h3>
+          <button class="btn btn-secondary btn-sm" onclick="loadManagerData()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Booking #</th>
+                <th>Customer & Driving Licence</th>
+                <th>Requested Vehicle</th>
+                <th>Dates & Duration</th>
+                <th>Total Quote</th>
+                <th>Customer Notes</th>
+                <th>Approval Action</th>
+              </tr>
+            </thead>
+            <tbody id="approvalsTbody">
+              <tr>
+                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading pending approvals...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="glass-panel">
+        <div class="panel-title">
+          <h3><i class="fa-solid fa-circle-check" style="color: #34d399;"></i> Approved Reservations (Ready for Customer Payment / Vehicle Dispatch)</h3>
+          <span class="badge badge-success" id="approvedCountBadge">0 Approved</span>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Booking #</th>
+                <th>Customer</th>
+                <th>Assigned Vehicle</th>
+                <th>Dates</th>
+                <th>Amount</th>
+                <th>Payment Status</th>
+                <th>Manager Notes</th>
+                <th>Dispatch Action</th>
+              </tr>
+            </thead>
+            <tbody id="approvedReservationsTbody">
+              <tr>
+                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No approved reservations waiting.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: VEHICLE RETURN & DAMAGE INSPECTION -->
+    <div id="returnsTab" class="tab-content">
+      <div class="glass-panel">
+        <div class="panel-title">
+          <h3><i class="fa-solid fa-car-on" style="color: #fbbf24;"></i> Active Rentals Awaiting Return & Inspection (FR8)</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Booking #</th>
+                <th>Customer</th>
+                <th>Vehicle & Reg No</th>
+                <th>Scheduled Return</th>
+                <th>Payment Status</th>
+                <th>Current Status</th>
+                <th>Return Processing</th>
+              </tr>
+            </thead>
+            <tbody id="returnsTbody">
+              <tr>
+                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading active rentals...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: MAINTENANCE SCHEDULING -->
+    <div id="maintTab" class="tab-content">
+      <div class="glass-panel">
+        <div class="panel-title">
+          <h3><i class="fa-solid fa-wrench" style="color: #fbbf24;"></i> Schedule Vehicle Servicing (FR10)</h3>
+          <button class="btn btn-primary btn-sm" onclick="openScheduleMaintModal()" style="background: linear-gradient(135deg, #d97706, #f59e0b); color: #111827;">
+            <i class="fa-solid fa-plus"></i> Schedule New Service
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Maint #</th>
+                <th>Vehicle</th>
+                <th>Registration</th>
+                <th>Next Service Date</th>
+                <th>Status</th>
+                <th>Work Description</th>
+                <th>Est. Cost</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="maintTbody">
+              <tr>
+                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading maintenance records...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: DAMAGE REPORTS LOG -->
+    <div id="damageLogTab" class="tab-content">
+      <div class="glass-panel">
+        <div class="panel-title">
+          <h3><i class="fa-solid fa-car-burst" style="color: #f87171;"></i> Damage Inspection Reports & Billed Repair Costs (FR9)</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Report #</th>
+                <th>Booking #</th>
+                <th>Vehicle</th>
+                <th>Inspection Date</th>
+                <th>Damage Description</th>
+                <th>Repair Cost</th>
+                <th>Inspector</th>
+                <th>Billed to Final Invoice</th>
+              </tr>
+            </thead>
+            <tbody id="damageTbody">
+              <tr>
+                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No damage reports recorded.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: SETTLEMENTS & INVOICES -->
+    <div id="settlementsTab" class="tab-content">
+      <div class="glass-panel">
+        <div class="panel-title">
+          <h3><i class="fa-solid fa-file-invoice-dollar" style="color: #fbbf24;"></i> Customer Invoices & Payment Ledger</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Payment Ref</th>
+                <th>Booking #</th>
+                <th>Customer</th>
+                <th>Payment Method</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="settlementsTbody">
+              <tr>
+                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading payments...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- 0A. Booking Approval Modal (FR4) -->
+  <div class="modal-overlay" id="approveModal">
+    <div class="modal-box" style="max-width: 580px;">
+      <button class="modal-close-btn" onclick="closeApproveModal()"><i class="fa-solid fa-xmark"></i></button>
+      <div style="margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.35rem; font-weight: 800; color: #34d399;"><i class="fa-solid fa-clipboard-check"></i> Approve & Assign Reservation</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Verify customer licence and confirm vehicle reservation assignment</p>
+      </div>
+
+      <div id="approveModalSummary" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
+        <!-- Filled dynamically -->
+      </div>
+
+      <form onsubmit="submitApproveModal(event)">
+        <input type="hidden" id="modalApproveBookingId">
+
+        <div class="form-group">
+          <label><i class="fa-solid fa-signature"></i> Manager Approval Notes</label>
+          <input type="text" id="modalApproveNotes" class="form-control" value="Driving licence verified. Vehicle assigned." required>
+          <small style="color: var(--text-muted); font-size: 0.75rem;">Recorded in customer reservation history</small>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.88rem; cursor: pointer;">
+            <input type="checkbox" id="chkDlVerified" checked style="accent-color: #10b981; width: 18px; height: 18px;">
+            <span>I confirm that I have verified the customer's driving licence and valid credentials</span>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeApproveModal()">Cancel</button>
+          <button type="submit" id="modalApproveSubmitBtn" class="btn btn-success" style="background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 700;">
+            <i class="fa-solid fa-check-double"></i> Confirm & Approve Booking
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 0B. Booking Rejection Modal (FR4) -->
+  <div class="modal-overlay" id="rejectModal">
+    <div class="modal-box" style="max-width: 520px;">
+      <button class="modal-close-btn" onclick="closeRejectModal()"><i class="fa-solid fa-xmark"></i></button>
+      <div style="margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.35rem; font-weight: 800; color: #f87171;"><i class="fa-solid fa-circle-xmark"></i> Reject Reservation Request</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Provide a reason for rejecting this booking request</p>
+      </div>
+
+      <div id="rejectModalSummary" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 0.85rem; margin-bottom: 1.25rem; font-size: 0.9rem;">
+        <!-- Filled dynamically -->
+      </div>
+
+      <form onsubmit="submitRejectModal(event)">
+        <input type="hidden" id="modalRejectBookingId">
+
+        <div class="form-group">
+          <label>Select Rejection Reason</label>
+          <select id="modalRejectPreset" class="form-control" onchange="syncRejectReason(this.value)">
+            <option value="Driving licence expired or invalid details provided">Driving licence expired or invalid details provided</option>
+            <option value="Vehicle unavailable due to unexpected maintenance or schedule conflict">Vehicle unavailable due to unexpected maintenance</option>
+            <option value="Customer request cancelled upon direct inquiry">Customer request cancelled upon direct inquiry</option>
+            <option value="CUSTOM">Other specific reason...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Rejection Reason Details</label>
+          <input type="text" id="modalRejectReason" class="form-control" value="Driving licence expired or invalid details provided" required>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeRejectModal()">Cancel</button>
+          <button type="submit" id="modalRejectSubmitBtn" class="btn btn-danger" style="font-weight: 700;">
+            <i class="fa-solid fa-ban"></i> Confirm Rejection
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 1. Process Return & Damage Inspection Modal (FR8, FR9) -->
+  <div class="modal-overlay" id="returnModal">
+    <div class="modal-box" style="max-width: 640px;">
+      <button class="modal-close-btn" onclick="closeReturnModal()"><i class="fa-solid fa-xmark"></i></button>
+      <div style="margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.35rem; font-weight: 800; color: #fbbf24;"><i class="fa-solid fa-car-side"></i> Process Returned Vehicle (FR8 & FR9)</h3>
+        <p id="returnVehInfo" style="color: var(--text-muted); font-size: 0.85rem;">Inspect odometer, fuel level and check for damages</p>
+      </div>
+
+      <form onsubmit="submitVehicleReturn(event)">
+        <input type="hidden" id="returnBookingId">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Return Date</label>
+            <input type="date" id="returnDate" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>Ending Odometer Reading (km / miles)</label>
+            <input type="number" id="returnOdo" class="form-control" placeholder="e.g. 15200" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Fuel Level Check</label>
+          <select id="returnFuel" class="form-control">
+            <option value="Full">Full Tank (Normal)</option>
+            <option value="75%">75% Fuel</option>
+            <option value="50%">50% Fuel</option>
+            <option value="25%">25% Fuel</option>
+            <option value="Low">Low Fuel (+$45 Refueling Fee Surcharge)</option>
+          </select>
+        </div>
+
+        <!-- Damage Inspection Section (FR9) -->
+        <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+            <label style="font-size: 0.9rem; font-weight: 700; color: #f87171; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="checkbox" id="chkDamageFound" onchange="toggleDamageFields(this.checked)">
+              <span>Damage Detected During Inspection (FR9)</span>
+            </label>
+          </div>
+
+          <div id="damageInputGroup" style="display: none;">
+            <div class="form-group">
+              <label>Damage Description (Scratches, Dents, Mechanical, Interior)</label>
+              <textarea id="dmgDesc" class="form-control" rows="2" placeholder="e.g. Dent on rear passenger bumper and shattered left tail light"></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Estimated Repair Cost ($) [Added to Final Bill]</label>
+                <input type="number" step="0.01" id="dmgCost" class="form-control" placeholder="e.g. 120.00">
+              </div>
+              <div class="form-group">
+                <label>Inspector Name</label>
+                <input type="text" id="dmgInspector" class="form-control" value="Sarah Jenkins (Manager)">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeReturnModal()">Cancel</button>
+          <button type="submit" id="returnSubmitBtn" class="btn btn-amber">
+            <i class="fa-solid fa-check-double"></i> Complete Return & Settle Final Bill
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Schedule Maintenance Modal (FR10) -->
+  <div class="modal-overlay" id="maintModal">
+    <div class="modal-box">
+      <button class="modal-close-btn" onclick="closeMaintModal()"><i class="fa-solid fa-xmark"></i></button>
+      <div style="margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.35rem; font-weight: 800; color: #fbbf24;"><i class="fa-solid fa-wrench"></i> Schedule Vehicle Maintenance (FR10)</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Vehicle availability will immediately be set to UNDER_MAINTENANCE</p>
+      </div>
+
+      <form onsubmit="submitScheduleMaint(event)">
+        <div class="form-group">
+          <label>Select Fleet Vehicle</label>
+          <select id="maintVehicleSelect" class="form-control" required></select>
+        </div>
+
+        <div class="form-group">
+          <label>Next Service Date</label>
+          <input type="date" id="maintNextDate" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label>Service Description & Work Required</label>
+          <textarea id="maintDesc" class="form-control" rows="2" placeholder="e.g. Engine oil change, brake inspection, wheel alignment" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Estimated Service Cost ($)</label>
+          <input type="number" step="0.01" id="maintCost" class="form-control" placeholder="e.g. 150.00" value="100.00">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeMaintModal()">Cancel</button>
+          <button type="submit" class="btn btn-amber"><i class="fa-solid fa-calendar-check"></i> Schedule Maintenance</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. Complete Maintenance Modal -->
+  <div class="modal-overlay" id="completeMaintModal">
+    <div class="modal-box">
+      <button class="modal-close-btn" onclick="closeCompleteMaintModal()"><i class="fa-solid fa-xmark"></i></button>
+      <div style="margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.35rem; font-weight: 800; color: #34d399;"><i class="fa-solid fa-circle-check"></i> Complete Maintenance Service</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Vehicle will automatically be returned to AVAILABLE status</p>
+      </div>
+
+      <form onsubmit="submitCompleteMaint(event)">
+        <input type="hidden" id="completeMaintId">
+        <div class="form-group">
+          <label>Actual Service Cost Incurred ($)</label>
+          <input type="number" step="0.01" id="actualMaintCost" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Service Notes / Replacement Parts</label>
+          <input type="text" id="completeMaintNotes" class="form-control" placeholder="e.g. Replaced filters, tested and verified safe">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeCompleteMaintModal()">Cancel</button>
+          <button type="submit" class="btn btn-success"><i class="fa-solid fa-check"></i> Finalize & Make Available</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. Invoice View Modal -->
+  <div class="modal-overlay" id="mgrInvoiceModal">
+    <div class="modal-box" style="max-width: 680px;">
+      <button class="modal-close-btn" onclick="closeMgrInvoiceModal()"><i class="fa-solid fa-xmark"></i></button>
+      <div id="mgrInvoiceContent">
+        <!-- Rendered invoice -->
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; border-top: 1px solid var(--border-glass); padding-top: 1rem;">
+        <button type="button" class="btn btn-secondary" onclick="closeMgrInvoiceModal()">Close</button>
+        <button type="button" class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> Print</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastBox"></div>
+
+  <script src="js/api.js"></script>
+  <script>
+    // Enforce role guard: user must be RENTAL_MANAGER
+    const currentMgr = requireRole('RENTAL_MANAGER', 'manager-login.html');
+    let allBookings = [];
+    let allVehicles = [];
+
+    function switchMgrTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+
+      if (tabId === 'maintTab') loadMaintenance();
+      if (tabId === 'damageLogTab') loadDamageReports();
+      if (tabId === 'settlementsTab') loadSettlements();
+    }
+
+    async function initManagerDashboard() {
+      if (!currentMgr) return;
+      document.getElementById('mgrNavName').textContent = currentMgr.fullName || currentMgr.username;
+      
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('returnDate').value = today;
+
+      const nextWeek = new Date();
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      document.getElementById('maintNextDate').value = nextWeek.toISOString().split('T')[0];
+
+      await loadManagerData();
+    }
+
+    async function loadManagerData() {
+      try {
+        const [bookings, vehicles] = await Promise.all([
+          apiGet('/bookings'),
+          apiGet('/vehicles')
+        ]);
+
+        allBookings = bookings || [];
+        allVehicles = vehicles || [];
+
+        // Count KPIs
+        let pending = 0, approved = 0, active = 0, completed = 0, maint = 0;
+        allBookings.forEach(b => {
+          if (b.bookingStatus === 'PENDING_APPROVAL') pending++;
+          if (b.bookingStatus === 'APPROVED') approved++;
+          if (b.bookingStatus === 'ACTIVE') active++;
+          if (b.bookingStatus === 'COMPLETED') completed++;
+        });
+
+        allVehicles.forEach(v => {
+          if (v.availability === 'UNDER_MAINTENANCE') maint++;
+        });
+
+        document.getElementById('mgrKpiPending').textContent = pending;
+        document.getElementById('pendingBadge').textContent = pending;
+        document.getElementById('mgrKpiActive').textContent = active;
+        document.getElementById('mgrKpiCompleted').textContent = completed;
+        document.getElementById('mgrKpiMaintenance').textContent = maint;
+        const appBadge = document.getElementById('approvedCountBadge');
+        if (appBadge) appBadge.textContent = `${approved} Approved`;
+
+        renderApprovals();
+        renderApprovedReservations();
+        renderReturns();
+      } catch (err) {
+        console.error('Manager data error:', err);
+      }
+    }
+
+    // 1. Render Approvals Tab (FR4)
+    function renderApprovals() {
+      const pendingBookings = allBookings.filter(b => b.bookingStatus === 'PENDING_APPROVAL');
+      const tbody = document.getElementById('approvalsTbody');
+
+      if (pendingBookings.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2.5rem;"><i class="fa-solid fa-circle-check fa-2x" style="color:#10b981; margin-bottom:0.5rem;"></i><br>All customer booking requests have been reviewed!</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = pendingBookings.map(b => {
+        const cust = b.customer || {};
+        const veh = b.vehicle || {};
+        return `
+          <tr>
+            <td><strong>#${b.bookingId}</strong></td>
+            <td>
+              <div style="font-weight: 700;">${cust.name || 'Customer'}</div>
+              <div style="font-size: 0.8rem; color: #38bdf8;"><i class="fa-solid fa-id-card"></i> ${cust.drivingLicence || 'N/A'}</div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">${cust.phone || ''}</div>
+            </td>
+            <td>
+              <div style="font-weight: 700;">${veh.brand || ''} ${veh.model || ''}</div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">${veh.registrationNo || ''} &bull; ${veh.vehicleType || ''}</div>
+            </td>
+            <td>
+              <div>${formatDate(b.rentalStartDate)} &rarr; ${formatDate(b.rentalEndDate)}</div>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">${b.rentalDays} Days</span>
+            </td>
+            <td style="font-weight: 700; color: #38bdf8;">${formatCurrency(b.totalCharge)}</td>
+            <td style="font-size: 0.82rem; color: var(--text-dim); max-width: 180px;">${b.managerNotes || 'Standard reservation'}</td>
+            <td>
+              <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                <button class="btn btn-success btn-sm" onclick="openApproveModal(${b.bookingId})">
+                  <i class="fa-solid fa-check"></i> Approve & Assign
+                </button>
+                <button class="btn btn-secondary btn-sm" title="Quick 1-Click Approve" onclick="quickApproveBooking(${b.bookingId})">
+                  <i class="fa-solid fa-bolt" style="color:#fbbf24;"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="openRejectModal(${b.bookingId})">
+                  <i class="fa-solid fa-xmark"></i> Reject
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderApprovedReservations() {
+      const approvedBookings = allBookings.filter(b => b.bookingStatus === 'APPROVED');
+      const tbody = document.getElementById('approvedReservationsTbody');
+      if (!tbody) return;
+
+      if (approvedBookings.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No approved reservations waiting.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = approvedBookings.map(b => {
+        const cust = b.customer || {};
+        const veh = b.vehicle || {};
+        const isPaid = b.paymentStatus === 'PAID';
+        const payBadge = isPaid ? 'badge-success' : 'badge-warning';
+
+        return `
+          <tr>
+            <td><strong>#${b.bookingId}</strong></td>
+            <td>
+              <div style="font-weight: 700;">${cust.name || 'Customer'}</div>
+              <span style="font-size: 0.78rem; color: #38bdf8;">${cust.phone || ''}</span>
+            </td>
+            <td>
+              <div style="font-weight: 700;">${veh.brand || ''} ${veh.model || ''}</div>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">${veh.registrationNo || ''} &bull; ${veh.vehicleType || ''}</span>
+            </td>
+            <td>
+              <div>${formatDate(b.rentalStartDate)} &rarr; ${formatDate(b.rentalEndDate)}</div>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">${b.rentalDays} Days</span>
+            </td>
+            <td style="font-weight: 700; color: #38bdf8;">${formatCurrency(b.totalCharge)}</td>
+            <td><span class="badge ${payBadge}">${b.paymentStatus}</span></td>
+            <td style="font-size: 0.8rem; color: var(--text-muted); max-width: 160px;">${b.managerNotes || '-'}</td>
+            <td>
+              ${isPaid
+                ? `<button class="btn btn-primary btn-sm" onclick="handoverBookingAction(${b.bookingId}, true)" style="background: linear-gradient(135deg, #0284c7, #06b6d4);">
+                    <i class="fa-solid fa-key"></i> Dispatch / Hand Over
+                   </button>`
+                : `<button class="btn btn-warning btn-sm" onclick="handoverBookingAction(${b.bookingId}, false)" style="background: linear-gradient(135deg, #d97706, #f59e0b);">
+                    <i class="fa-solid fa-cash-register"></i> Collect Upfront &amp; Hand Over
+                   </button>`
+              }
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openApproveModal(bookingId) {
+      const b = allBookings.find(x => x.bookingId === bookingId);
+      if (!b) return;
+
+      document.getElementById('modalApproveBookingId').value = b.bookingId;
+      const cust = b.customer || {};
+      const veh = b.vehicle || {};
+
+      document.getElementById('approveModalSummary').innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.88rem;">
+          <div><span style="color:var(--text-muted);">Reservation:</span> <strong>Booking #${b.bookingId}</strong></div>
+          <div><span style="color:var(--text-muted);">Total Quote:</span> <strong style="color:#38bdf8;">${formatCurrency(b.totalCharge)}</strong></div>
+          <div><span style="color:var(--text-muted);">Customer:</span> <strong>${cust.name || 'Customer'}</strong></div>
+          <div><span style="color:var(--text-muted);">Driving Licence:</span> <code style="color:#38bdf8;">${cust.drivingLicence || 'DL Verified'}</code></div>
+          <div style="grid-column: 1/-1;"><span style="color:var(--text-muted);">Vehicle:</span> <strong>${veh.brand || ''} ${veh.model || ''}</strong> (${veh.registrationNo || 'Assigned'}) &bull; ${b.rentalDays} Days</div>
+        </div>
+      `;
+
+      document.getElementById('modalApproveNotes').value = 'Driving licence verified. Vehicle assigned.';
+      document.getElementById('chkDlVerified').checked = true;
+      document.getElementById('approveModal').classList.add('active');
+    }
+
+    function closeApproveModal() {
+      document.getElementById('approveModal').classList.remove('active');
+    }
+
+    async function submitApproveModal(e) {
+      e.preventDefault();
+      const dlVerified = document.getElementById('chkDlVerified').checked;
+      if (!dlVerified) {
+        showToast('Please confirm that you have verified the customer driving licence before approving.', 'error');
+        return;
+      }
+      const bookingId = Number(document.getElementById('modalApproveBookingId').value);
+      if (!bookingId) {
+        showToast('Invalid booking ID. Please refresh and try again.', 'error');
+        return;
+      }
+      const notes = document.getElementById('modalApproveNotes').value || 'Driving licence verified. Vehicle assigned.';
+      const submitBtn = document.getElementById('modalApproveSubmitBtn');
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Approving...';
+
+      try {
+        await apiPost(`/bookings/${bookingId}/approve`, { notes: notes });
+        showToast(`Booking #${bookingId} approved! Vehicle reserved and customer notified.`, 'success');
+        closeApproveModal();
+        await loadManagerData();
+      } catch (err) {
+        showToast(err.message || 'Approval failed. Please try again.', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa-solid fa-check-double"></i> Confirm &amp; Approve Booking';
+      }
+    }
+
+    async function quickApproveBooking(bookingId) {
+      if (!confirm(`Quick approve Booking #${bookingId}? This confirms you have verified the customer details.`)) return;
+      try {
+        await apiPost(`/bookings/${bookingId}/approve`, { notes: 'Quick verified by Manager. Vehicle assigned.' });
+        showToast(`✅ Booking #${bookingId} approved successfully!`, 'success');
+        await loadManagerData();
+      } catch (err) {
+        showToast(err.message || 'Quick approval failed.', 'error');
+      }
+    }
+
+    function openRejectModal(bookingId) {
+      const b = allBookings.find(x => x.bookingId === bookingId);
+      if (!b) return;
+
+      document.getElementById('modalRejectBookingId').value = b.bookingId;
+      document.getElementById('rejectModalSummary').innerHTML = `
+        Rejecting Booking #${b.bookingId} for <strong>${b.customer?.name || 'Customer'}</strong> (${b.vehicle?.brand || ''} ${b.vehicle?.model || ''}).
+      `;
+      document.getElementById('modalRejectPreset').value = 'Driving licence expired or invalid details provided';
+      document.getElementById('modalRejectReason').value = 'Driving licence expired or invalid details provided';
+      document.getElementById('rejectModal').classList.add('active');
+    }
+
+    function closeRejectModal() {
+      document.getElementById('rejectModal').classList.remove('active');
+    }
+
+    function syncRejectReason(val) {
+      if (val !== 'CUSTOM') {
+        document.getElementById('modalRejectReason').value = val;
+      } else {
+        document.getElementById('modalRejectReason').value = '';
+        document.getElementById('modalRejectReason').focus();
+      }
+    }
+
+    async function submitRejectModal(e) {
+      e.preventDefault();
+      const bookingId = Number(document.getElementById('modalRejectBookingId').value);
+      const reason = document.getElementById('modalRejectReason').value;
+      if (!reason || !reason.trim()) {
+        showToast('Please provide a rejection reason.', 'error');
+        return;
+      }
+      const submitBtn = document.getElementById('modalRejectSubmitBtn');
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Rejecting...';
+
+      try {
+        await apiPost(`/bookings/${bookingId}/reject`, { reason: reason });
+        showToast(`Booking #${bookingId} rejected. Customer notified.`, 'info');
+        closeRejectModal();
+        await loadManagerData();
+      } catch (err) {
+        showToast(err.message || 'Rejection failed. Please try again.', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa-solid fa-ban"></i> Confirm Rejection';
+      }
+    }
+
+    async function handoverBookingAction(bookingId, isPaid) {
+      const confirmPrompt = isPaid
+        ? `Confirm vehicle handover for Booking #${bookingId}? Customer has already completed upfront payment.`
+        : `Customer has not paid online yet. Confirm upfront payment collection and hand over keys for Booking #${bookingId}?`;
+      if (!confirm(confirmPrompt)) return;
+
+      try {
+        await apiPost(`/bookings/${bookingId}/handover`, {
+          notes: isPaid ? 'Vehicle keys handed over to customer (Upfront payment verified).' : 'Upfront payment received at front desk. Vehicle keys handed over.'
+        });
+        showToast(`Vehicle handed over for Booking #${bookingId}! Rental is now ACTIVE on road.`, 'success');
+        await loadManagerData();
+      } catch (err) {
+        showToast(err.message || 'Handover failed.', 'error');
+      }
+    }
+
+    // 2. Render Returns Tab (FR8)
+    function renderReturns() {
+      const activeBookings = allBookings.filter(b => b.bookingStatus === 'ACTIVE' || b.bookingStatus === 'PENDING_FINAL_PAYMENT');
+      const tbody = document.getElementById('returnsTbody');
+
+      if (activeBookings.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">No vehicles are currently out on active rentals.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = activeBookings.map(b => {
+        const cust = b.customer || {};
+        const veh = b.vehicle || {};
+        const pendingDmg = b.damageFee || 0;
+        const pendingLate = b.lateFee || 0;
+        const totalPending = pendingDmg + pendingLate;
+
+        return `
+          <tr>
+            <td><strong>#${b.bookingId}</strong></td>
+            <td>
+              <div style="font-weight: 700;">${cust.name || 'Customer'}</div>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">${cust.phone || ''}</span>
+            </td>
+            <td>
+              <div style="font-weight: 700;">${veh.brand || ''} ${veh.model || ''}</div>
+              <span style="font-size: 0.78rem; color: #38bdf8;">${veh.registrationNo || ''}</span>
+            </td>
+            <td>${formatDate(b.rentalEndDate)}</td>
+            <td><span class="badge badge-success">${b.paymentStatus}</span></td>
+            <td><span class="badge ${b.bookingStatus === 'PENDING_FINAL_PAYMENT' ? 'badge-danger' : (b.bookingStatus === 'COMPLETED' ? 'badge-success' : 'badge-purple')}">${b.bookingStatus === 'COMPLETED' ? '<i class="fa-solid fa-circle-check"></i> Order Closed' : b.bookingStatus}</span></td>
+            <td>
+              ${b.bookingStatus === 'PENDING_FINAL_PAYMENT'
+                ? `
+                   <div style="display: flex; flex-direction: column; gap: 0.35rem; align-items: flex-start;">
+                     <span class="badge badge-danger" style="padding:0.35rem 0.65rem; font-size:0.75rem;">
+                       <i class="fa-solid fa-triangle-exclamation"></i> Due: $${totalPending.toFixed(2)}
+                       ${pendingDmg > 0 ? ` (Dmg: $${pendingDmg.toFixed(2)})` : ''}
+                       ${pendingLate > 0 ? ` (Late: $${pendingLate.toFixed(2)})` : ''}
+                     </span>
+                     <button class="btn btn-success btn-sm" onclick="managerSettleFinalPayment(${b.bookingId}, ${totalPending.toFixed(2)})" style="background: linear-gradient(135deg, #059669, #10b981);">
+                       <i class="fa-solid fa-cash-register"></i> Pay Pending Amount &amp; Close Order
+                     </button>
+                   </div>
+                  `
+                : `<button class="btn btn-amber btn-sm" onclick="openReturnModal(${b.bookingId})"><i class="fa-solid fa-arrow-right-to-bracket"></i> Inspect &amp; Accept Return</button>`
+              }
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function managerSettleFinalPayment(bookingId, amount) {
+      if (!confirm(`Confirm receipt of pending charges ($${amount}) from customer? This will settle the balance and officially CLOSE the order.`)) return;
+      try {
+        await apiPost(`/bookings/${bookingId}/pay-final`, { paymentMethod: 'Counter Cash / POS Settlement' });
+        showToast(`Booking #${bookingId} pending charges settled! Order is now CLOSED.`, 'success');
+        await loadManagerData();
+        loadSettlements();
+      } catch (err) {
+        showToast(err.message || 'Settlement failed.', 'error');
+      }
+    }
+
+    function openReturnModal(bookingId) {
+      const b = allBookings.find(x => x.bookingId === bookingId);
+      if (!b) return;
+
+      document.getElementById('returnBookingId').value = b.bookingId;
+      document.getElementById('returnVehInfo').textContent = `${b.vehicle?.brand || ''} ${b.vehicle?.model || ''} (Reg: ${b.vehicle?.registrationNo || ''}) • Rented by ${b.customer?.name || 'Customer'}`;
+      document.getElementById('returnOdo').value = '15000';
+      document.getElementById('chkDamageFound').checked = false;
+      toggleDamageFields(false);
+
+      document.getElementById('returnModal').classList.add('active');
+    }
+
+    function closeReturnModal() {
+      document.getElementById('returnModal').classList.remove('active');
+    }
+
+    function toggleDamageFields(show) {
+      document.getElementById('damageInputGroup').style.display = show ? 'block' : 'none';
+      if (show) {
+        document.getElementById('dmgCost').value = '80.00';
+      }
+    }
+
+    async function submitVehicleReturn(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('returnSubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing Return...';
+
+      const bookingId = Number(document.getElementById('returnBookingId').value);
+      const isDamaged = document.getElementById('chkDamageFound').checked;
+
+      const payload = {
+        bookingId: bookingId,
+        returnDate: document.getElementById('returnDate').value,
+        odometerReading: Number(document.getElementById('returnOdo').value),
+        fuelLevel: document.getElementById('returnFuel').value,
+        damageFound: isDamaged,
+        damageDescription: isDamaged ? document.getElementById('dmgDesc').value : null,
+        estimatedRepairCost: isDamaged ? Number(document.getElementById('dmgCost').value) : null,
+        inspectorNotes: document.getElementById('dmgInspector').value
+      };
+
+      try {
+        const res = await apiPost('/returns', payload);
+        if (res.bookingStatus === 'PENDING_FINAL_PAYMENT') {
+          showToast('Return processed! Outstanding charges recorded. Customer must pay the final amount before order closes.', 'info');
+        } else {
+          showToast('Vehicle return finalized! No outstanding charges — order closed and vehicle available.', 'success');
+        }
+        closeReturnModal();
+        await loadManagerData();
+        // Switch to settlements tab
+        switchMgrTab('settlementsTab', document.querySelectorAll('.tab-btn')[4]);
+      } catch (err) {
+        // Handled
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa-solid fa-check-double"></i> Complete Return & Settle Final Bill';
+      }
+    }
+
+    // 3. Maintenance Tab (FR10)
+    async function loadMaintenance() {
+      try {
+        const maintList = await apiGet('/maintenance');
+        const tbody = document.getElementById('maintTbody');
+
+        if (!maintList || maintList.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No maintenance records scheduled.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = maintList.map(m => {
+          const veh = m.vehicle || {};
+          let statusBadge = 'badge-warning';
+          let actionBtn = '';
+          if (m.maintenanceStatus === 'COMPLETED') {
+            statusBadge = 'badge-success';
+            actionBtn = '<span style="color:var(--text-dim);">-</span>';
+          } else {
+            actionBtn = `<button class="btn btn-success btn-sm" onclick="openCompleteMaintModal(${m.maintenanceId}, ${m.serviceCost})"><i class="fa-solid fa-check"></i> Mark Complete</button>`;
+          }
+
+          return `
+            <tr>
+              <td><strong>#${m.maintenanceId}</strong></td>
+              <td>${veh.brand || ''} ${veh.model || ''}</td>
+              <td><span style="color:#38bdf8;">${veh.registrationNo || ''}</span></td>
+              <td>${formatDate(m.nextServiceDate)}</td>
+              <td><span class="badge ${statusBadge}">${m.maintenanceStatus}</span></td>
+              <td style="font-size:0.84rem; max-width: 250px;">${m.description || 'Standard service'}</td>
+              <td style="font-weight:700;">${formatCurrency(m.serviceCost)}</td>
+              <td>${actionBtn}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) {
+        console.error('Maint load error:', e);
+      }
+    }
+
+    function openScheduleMaintModal() {
+      const select = document.getElementById('maintVehicleSelect');
+      select.innerHTML = allVehicles.map(v => `
+        <option value="${v.vehicleId}">${v.brand} ${v.model} (${v.registrationNo}) - Currently ${v.availability}</option>
+      `).join('');
+      document.getElementById('maintModal').classList.add('active');
+    }
+
+    function closeMaintModal() {
+      document.getElementById('maintModal').classList.remove('active');
+    }
+
+    async function submitScheduleMaint(e) {
+      e.preventDefault();
+      const payload = {
+        vehicleId: Number(document.getElementById('maintVehicleSelect').value),
+        nextServiceDate: document.getElementById('maintNextDate').value,
+        description: document.getElementById('maintDesc').value,
+        serviceCost: Number(document.getElementById('maintCost').value) || 0.0,
+        maintenanceStatus: 'SCHEDULED'
+      };
+
+      try {
+        await apiPost('/maintenance', payload);
+        showToast('Service scheduled. Vehicle marked UNDER_MAINTENANCE and blocked from booking.', 'success');
+        closeMaintModal();
+        await loadManagerData();
+        await loadMaintenance();
+      } catch (err) {
+        // Handled
+      }
+    }
+
+    function openCompleteMaintModal(maintId, cost) {
+      document.getElementById('completeMaintId').value = maintId;
+      document.getElementById('actualMaintCost').value = cost || 100.0;
+      document.getElementById('completeMaintModal').classList.add('active');
+    }
+
+    function closeCompleteMaintModal() {
+      document.getElementById('completeMaintModal').classList.remove('active');
+    }
+
+    async function submitCompleteMaint(e) {
+      e.preventDefault();
+      const id = document.getElementById('completeMaintId').value;
+      const cost = Number(document.getElementById('actualMaintCost').value);
+      const notes = document.getElementById('completeMaintNotes').value;
+
+      try {
+        await apiPost(`/maintenance/${id}/complete`, { cost: cost, notes: notes });
+        showToast('Maintenance marked complete! Vehicle returned to AVAILABLE status.', 'success');
+        closeCompleteMaintModal();
+        await loadManagerData();
+        await loadMaintenance();
+      } catch (err) {
+        // Handled
+      }
+    }
+
+    // 4. Damage Reports Tab (FR9)
+    async function loadDamageReports() {
+      try {
+        const damages = await apiGet('/damages');
+        const tbody = document.getElementById('damageTbody');
+
+        if (!damages || damages.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No damages recorded on returned vehicles.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = damages.map(d => {
+          const veh = d.vehicle || {};
+          return `
+            <tr>
+              <td><strong>#DMG-${d.damageId}</strong></td>
+              <td>#${d.bookingId}</td>
+              <td>${veh.brand || ''} ${veh.model || ''} (${veh.registrationNo || ''})</td>
+              <td>${formatDate(d.inspectionDate)}</td>
+              <td style="color:#f87171; font-size:0.85rem; max-width:260px;">${d.damageDescription}</td>
+              <td style="font-weight:700; color:#f87171;">${formatCurrency(d.repairCost)}</td>
+              <td>${d.inspectorName || 'Staff'}</td>
+              <td><span class="badge badge-success"><i class="fa-solid fa-check"></i> Added to Invoice</span></td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) {
+        console.error('Damage load error:', e);
+      }
+    }
+
+    // 5. Settlements Tab
+    async function loadSettlements() {
+      try {
+        const payments = await apiGet('/payments');
+        const tbody = document.getElementById('settlementsTbody');
+
+        if (!payments || payments.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No payment transactions recorded yet.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = payments.map(p => {
+          const booking = allBookings.find(b => b.bookingId === p.bookingId) || {};
+          const cust = booking.customer || {};
+          return `
+            <tr>
+              <td><code>${p.transactionRef || 'TXN-' + p.paymentId}</code></td>
+              <td><strong>#${p.bookingId}</strong></td>
+              <td>${cust.name || 'Customer'}</td>
+              <td>${p.paymentMethod}</td>
+              <td>${formatDate(p.paymentDate)}</td>
+              <td style="font-weight:700; color:#34d399;">${formatCurrency(p.amount)}</td>
+              <td><span class="badge badge-success">${p.paymentStatus}</span></td>
+              <td>
+                <button class="btn btn-secondary btn-sm" onclick="viewManagerInvoice(${p.bookingId})">
+                  <i class="fa-solid fa-receipt"></i> View Invoice
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) {
+        console.error('Settlements error:', e);
+      }
+    }
+
+    async function viewManagerInvoice(bookingId) {
+      try {
+        const inv = await apiGet(`/payments/invoice/${bookingId}`);
+        const modal = document.getElementById('mgrInvoiceContent');
+
+        modal.innerHTML = `
+          <div style="border-bottom: 2px solid var(--border-glass); padding-bottom: 1rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h2 style="font-size: 1.4rem; font-weight: 800; color: #fbbf24;">DriveEase Official Invoice</h2>
+              <p style="color: var(--text-muted); font-size: 0.82rem;">Rental Agreement & Payment Record</p>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 800; font-size: 1.1rem;">${inv.invoiceNumber}</div>
+              <div style="color: var(--text-muted); font-size: 0.82rem;">${formatDate(inv.invoiceDate)}</div>
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-bottom: 1.25rem;">
+            <div style="background: rgba(255,255,255,0.02); padding: 0.85rem; border-radius: 8px;">
+              <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Customer</div>
+              <div style="font-weight: 700; margin-top: 0.25rem;">${inv.customer?.name || 'N/A'}</div>
+              <div style="font-size: 0.82rem; color: #38bdf8;">DL: ${inv.customer?.drivingLicence || 'N/A'}</div>
+              <div style="font-size: 0.82rem; color: var(--text-muted);">${inv.customer?.phone || ''}</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.02); padding: 0.85rem; border-radius: 8px;">
+              <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Assigned Vehicle</div>
+              <div style="font-weight: 700; margin-top: 0.25rem;">${inv.vehicle?.title || 'Vehicle'}</div>
+              <div style="font-size: 0.82rem; color: var(--text-muted);">Reg: ${inv.vehicle?.registrationNo || ''}</div>
+              <div class="badge badge-success" style="margin-top: 0.35rem;">Status: ${inv.paymentStatus}</div>
+            </div>
+          </div>
+
+          <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; font-size: 0.88rem;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
+              <span>Base Rental (${inv.rentalDays} Days @ $${inv.baseDailyRate}/day):</span>
+              <span>${formatCurrency(inv.baseDailyRate * inv.rentalDays * inv.dynamicMultiplier)}</span>
+            </div>
+            ${inv.extraCharges > 0 ? `<div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;"><span>Add-ons (Insurance / GPS):</span><span>${formatCurrency(inv.extraCharges)}</span></div>` : ''}
+            ${inv.lateFee > 0 ? `<div style="display:flex; justify-content:space-between; margin-bottom:0.4rem; color:#fbbf24;"><span>Late Return Charges:</span><span>${formatCurrency(inv.lateFee)}</span></div>` : ''}
+            ${inv.damageFee > 0 ? `<div style="display:flex; justify-content:space-between; margin-bottom:0.4rem; color:#f87171;"><span>Damage Inspection Repair Fee:</span><span>${formatCurrency(inv.damageFee)}</span></div>` : ''}
+            <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:0.5rem; display:flex; justify-content:space-between; font-weight:800; font-size:1.15rem; color:#34d399;">
+              <span>Total Settled:</span>
+              <span>${formatCurrency(inv.totalAmount)}</span>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('mgrInvoiceModal').classList.add('active');
+      } catch (err) {
+        // Handled
+      }
+    }
+
+    function closeMgrInvoiceModal() {
+      document.getElementById('mgrInvoiceModal').classList.remove('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', initManagerDashboard);
+  </script>
+</body>
+</html>

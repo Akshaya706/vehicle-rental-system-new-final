@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rental Manager Login - DriveEase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="top-nav">
+    <a href="index.html" class="brand-wrapper">
+      <div class="brand-icon-box" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+        <i class="fa-solid fa-clipboard-check"></i>
+      </div>
+      <div class="brand-text">
+        <h1>DriveEase</h1>
+        <p style="color: #fbbf24;">Rental Operations Portal</p>
+      </div>
+    </a>
+    <div class="nav-actions">
+      <a href="index.html" class="btn btn-secondary btn-sm"><i class="fa-solid fa-house"></i> Home</a>
+      <a href="customer-login.html" class="btn btn-secondary btn-sm"><i class="fa-solid fa-user"></i> Customer Login</a>
+      <a href="admin-login.html" class="btn btn-secondary btn-sm"><i class="fa-solid fa-user-gear"></i> Admin Login</a>
+    </div>
+  </header>
+
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-portal-icon manager">
+          <i class="fa-solid fa-clipboard-user"></i>
+        </div>
+        <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.35rem;">Rental Manager Login</h2>
+        <p style="color: var(--text-muted); font-size: 0.88rem;">Access verification, booking approvals, returns & damage records</p>
+      </div>
+
+      <!-- Demo Credentials Box -->
+      <div class="demo-credentials-box">
+        <div>
+          <span>Staff Demo Account:</span><br>
+          <code>manager_sarah</code> / <code>mgr123</code>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="quickFillManager()">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Fill
+        </button>
+      </div>
+
+      <!-- Sign In Form -->
+      <form onsubmit="handleManagerLogin(event)">
+        <div class="form-group">
+          <label><i class="fa-solid fa-user-shield"></i> Manager Username</label>
+          <input type="text" id="mgrUsername" class="form-control" placeholder="Enter manager username" required>
+        </div>
+
+        <div class="form-group">
+          <label><i class="fa-solid fa-key"></i> Manager Password</label>
+          <input type="password" id="mgrPassword" class="form-control" placeholder="Enter password" required>
+        </div>
+
+        <button type="submit" id="mgrSubmitBtn" class="btn btn-amber" style="width: 100%; padding: 0.8rem; margin-top: 0.5rem; font-weight: 700;">
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In to Manager Dashboard
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div id="toastBox"></div>
+
+  <script src="js/api.js"></script>
+  <script>
+    function quickFillManager() {
+      document.getElementById('mgrUsername').value = 'manager_sarah';
+      document.getElementById('mgrPassword').value = 'mgr123';
+      showToast('Filled Manager Sarah credentials', 'info');
+    }
+
+    async function handleManagerLogin(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('mgrSubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying staff credentials...';
+
+      const username = document.getElementById('mgrUsername').value;
+      const password = document.getElementById('mgrPassword').value;
+
+      try {
+        const res = await apiPost('/auth/login', {
+          username: username,
+          password: password,
+          requiredRole: 'RENTAL_MANAGER'
+        });
+
+        if (res.success) {
+          setCurrentUser(res);
+          showToast('Manager credentials verified. Welcome ' + (res.fullName || res.username), 'success');
+          setTimeout(() => {
+            window.location.href = 'manager-dashboard.html';
+          }, 600);
+        }
+      } catch (err) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In to Manager Dashboard';
+      }
+    }
+  </script>
+</body>
+</html>
