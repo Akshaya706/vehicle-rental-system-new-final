@@ -561,6 +561,223 @@
     ::-webkit-scrollbar { width: 7px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
     ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+
+
+    
+/* ===== Improved Navigation ===== */
+
+.main-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 14px 5%;
+  background: rgba(6, 11, 20, 0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.nav-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+  color: white;
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  box-shadow: 0 5px 20px rgba(6, 182, 212, 0.2);
+}
+
+.nav-brand-name {
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: #f8fafc;
+}
+
+.nav-brand-sub {
+  margin-top: 3px;
+  font-size: 0.68rem;
+  color: #94a3b8;
+  letter-spacing: 0.04em;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #a7b4c8;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.nav-link i {
+  color: #38bdf8;
+}
+
+.nav-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.nav-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 11px 17px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0284c7, #06b6d4);
+  color: white;
+  text-decoration: none;
+  font-size: 0.84rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform 0.2s ease;
+}
+
+.nav-cta:hover {
+  transform: translateY(-2px);
+}
+
+/* ===== More Organized Hero ===== */
+
+.hero {
+  padding: 5rem 1.5rem 3rem;
+  max-width: 950px;
+}
+
+.hero-eyebrow {
+  margin-bottom: 1.5rem;
+}
+
+.hero-h1 {
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  line-height: 1.12;
+}
+
+.hero-sub {
+  margin-bottom: 2.5rem;
+  font-size: 1rem;
+}
+
+/* ===== Better Section Separation ===== */
+
+.portals-wrap {
+  padding-bottom: 5rem;
+}
+
+.portals-label {
+  color: #94a3b8;
+  margin-bottom: 2rem;
+}
+
+.portals-grid {
+  gap: 1.25rem;
+}
+
+.portal-card {
+  padding: 2.25rem 1.75rem;
+  background: rgba(13, 20, 35, 0.82);
+  border-color: rgba(148, 163, 184, 0.13);
+}
+
+.fleet-section {
+  padding-bottom: 5rem;
+}
+
+.section-header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+
+/* ===== Responsive Header ===== */
+
+@media (max-width: 1000px) {
+  .main-nav {
+    flex-wrap: wrap;
+    padding: 14px 3%;
+  }
+
+  .nav-links {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .nav-cta {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .main-nav {
+    gap: 12px;
+  }
+
+  .nav-brand-sub {
+    font-size: 0.6rem;
+  }
+
+  .nav-cta {
+    padding: 10px 12px;
+    font-size: 0.78rem;
+  }
+
+  .nav-link {
+    padding: 9px 10px;
+    font-size: 0.78rem;
+  }
+
+  .nav-links {
+    gap: 3px;
+  }
+
+  .hero {
+    padding-top: 3.5rem;
+  }
+
+  .stats-strip {
+    gap: 1.5rem;
+  }
+
+  .stat-divider {
+    display: none;
+  }
+
+  footer {
+    padding: 1.5rem;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -575,25 +792,45 @@
 <div class="page">
 
   <!-- ─── Navbar ─── -->
-  <nav>
-    <a href="index.html" class="nav-brand">
-      <div class="nav-logo"><i class="fa-solid fa-car-rear"></i></div>
-      <div>
-        <div class="nav-brand-name">DriveEase</div>
-        <div class="nav-brand-sub">Vehicle Rental Management System</div>
-      </div>
-    </a>
-    <div class="nav-pill">
-      <i class="fa-solid fa-code-branch"></i> IEEE 830 SRS &bull; Java Spring Boot
+  
+<nav class="main-nav">
+  <a href="index.html" class="nav-brand">
+    <div class="nav-logo">
+      <i class="fa-solid fa-car-rear"></i>
     </div>
-  </nav>
+    <div class="brand-info">
+      <div class="nav-brand-name">DriveEase</div>
+      <div class="nav-brand-sub">Vehicle Rental System</div>
+    </div>
+  </a>
+
+  <div class="nav-links">
+    <a href="customer-login.html" class="nav-link">
+      <i class="fa-solid fa-user"></i>
+      Customer
+    </a>
+
+    <a href="manager-login.html" class="nav-link">
+      <i class="fa-solid fa-clipboard-check"></i>
+      Rental Manager
+    </a>
+
+    <a href="admin-login.html" class="nav-link">
+      <i class="fa-solid fa-user-shield"></i>
+      Administrator
+    </a>
+  </div>
+
+  <a href="customer-login.html" class="nav-cta">
+    Get Started
+    <i class="fa-solid fa-arrow-right"></i>
+  </a>
+</nav>
+
 
   <!-- ─── Hero ─── -->
   <section class="hero">
-    <div class="hero-eyebrow">
-      <i class="fa-solid fa-shield-halved"></i>
-      Role-Based Access &mdash; <span>3 Dedicated Portals</span>
-    </div>
+  
 
     <h1 class="hero-h1">
       <span class="grad-blue">Smart Vehicle Rentals,</span><br>
@@ -601,7 +838,7 @@
     </h1>
 
     <p class="hero-sub">
-      One unified platform with separate, purpose-built dashboards for Customers, Rental Managers, and System Administrators — powered by Java Spring Boot.
+      Experience hassle-free vehicle rentals with one seamless platform. Discover available vehicles, manage bookings, track rental activity, and enjoy a smoother journey from start to finish — all in one place.
     </p>
 
     <!-- Live API stats strip -->
@@ -628,59 +865,6 @@
     </div>
   </section>
 
-  <!-- ─── 3 Portal Cards ─── -->
-  <section class="portals-wrap">
-    <div class="portals-label">Select your access portal to get started</div>
-
-    <div class="portals-grid">
-
-      <!-- Customer -->
-      <div class="portal-card c-customer">
-        <div class="p-icon-ring"><i class="fa-solid fa-user-circle"></i></div>
-        <div class="p-title">Customer</div>
-        <div class="p-role-tag"><i class="fa-solid fa-circle" style="font-size:0.5rem;"></i> Customer Portal</div>
-        <div class="p-divider"></div>
-        <div class="p-creds">
-          <div class="p-creds-label">Demo Login</div>
-          <div class="p-creds-val">john_doe / user123</div>
-        </div>
-        <a href="customer-login.html" class="p-btn p-btn-customer">
-          <i class="fa-solid fa-right-to-bracket"></i> Customer Login
-        </a>
-      </div>
-
-      <!-- Manager -->
-      <div class="portal-card c-manager">
-        <div class="p-icon-ring"><i class="fa-solid fa-clipboard-check"></i></div>
-        <div class="p-title">Rental Manager</div>
-        <div class="p-role-tag"><i class="fa-solid fa-circle" style="font-size:0.5rem;"></i> Operations Portal</div>
-        <div class="p-divider"></div>
-        <div class="p-creds">
-          <div class="p-creds-label">Demo Login</div>
-          <div class="p-creds-val">manager_sarah / mgr123</div>
-        </div>
-        <a href="manager-login.html" class="p-btn p-btn-manager">
-          <i class="fa-solid fa-user-shield"></i> Manager Login
-        </a>
-      </div>
-
-      <!-- Admin -->
-      <div class="portal-card c-admin">
-        <div class="p-icon-ring"><i class="fa-solid fa-user-gear"></i></div>
-        <div class="p-title">Administrator</div>
-        <div class="p-role-tag"><i class="fa-solid fa-circle" style="font-size:0.5rem;"></i> System Admin Portal</div>
-        <div class="p-divider"></div>
-        <div class="p-creds">
-          <div class="p-creds-label">Demo Login</div>
-          <div class="p-creds-val">admin / admin123</div>
-        </div>
-        <a href="admin-login.html" class="p-btn p-btn-admin">
-          <i class="fa-solid fa-shield-halved"></i> Admin Login
-        </a>
-      </div>
-
-    </div>
-  </section>
 
   <!-- ─── Live Fleet Showcase ─── -->
   <section class="fleet-section">
